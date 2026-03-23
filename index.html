@@ -1134,8 +1134,8 @@
                             <div className="stat-label">People Affected</div>
                         </div>
                         <div className="stat">
-                            <div className="stat-value">50+</div>
-                            <div className="stat-label">Food Resources</div>
+                            <div className="stat-value">75+</div>
+                            <div className="stat-label">Healthy Recipes</div>
                         </div>
                         <div className="stat">
                             <div className="stat-value">95%</div>
@@ -1155,16 +1155,16 @@
                     description: 'Machine learning-powered malnutrition risk evaluation based on demographics, symptoms, and dietary patterns. Get instant insights and personalized recommendations.'
                 },
                 {
-                    icon: 'map',
+                    icon: 'chat',
                     color: 'orange',
-                    title: 'Resource Locator',
-                    description: 'Find nearby food banks, community kitchens, fresh markets, and nutrition programs. Interactive map with real-time availability and directions.'
+                    title: 'AI Nutrition Assistant',
+                    description: 'Chat with our AI assistant to get answers about malnutrition, vitamins, meal planning, food safety, and healthy eating on any budget.'
                 },
                 {
                     icon: 'utensils',
                     color: 'purple',
-                    title: 'Smart Meal Plans',
-                    description: 'AI-generated meal suggestions based on available ingredients, nutritional needs, and budget constraints. Make the most of what you have.'
+                    title: '75+ Healthy Recipes',
+                    description: 'Browse our collection of nutritious, budget-friendly recipes with full ingredients, instructions, and nutritional information. Find meals for any dietary need.'
                 },
                 {
                     icon: 'users',
@@ -1176,7 +1176,7 @@
 
             const icons = {
                 brain: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a8 8 0 0 0-8 8c0 3.5 2 6.5 5 8v4h6v-4c3-1.5 5-4.5 5-8a8 8 0 0 0-8-8z"/><path d="M12 2v4m-4 4h8"/></svg>,
-                map: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+                chat: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
                 utensils: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>,
                 users: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             };
@@ -2485,6 +2485,296 @@
                     ingredients: ['6 eggs', '1/4 cup mayonnaise', '1 tsp mustard', 'Paprika', 'Salt', 'White pepper', 'Optional: pickle relish'],
                     instructions: ['Hard boil eggs.', 'Peel and halve.', 'Remove yolks.', 'Mash yolks with mayo and mustard.', 'Season and pipe back into whites.', 'Sprinkle with paprika.'],
                     tips: 'Use piping bag for pretty presentation.'
+                },
+                {
+                    name: 'Mediterranean Quinoa Bowl',
+                    description: 'Healthy grain bowl with cucumber, tomatoes, and feta.',
+                    tags: ['protein', 'vitamins'],
+                    macros: { protein: '14g', carbs: '42g', fiber: '6g', calories: 380, time: '20 min', servings: 2 },
+                    color: '#10b981',
+                    ingredients: ['1 cup quinoa', '1 cucumber', '1 cup cherry tomatoes', '1/2 cup kalamata olives', '1/2 cup feta cheese', '1/4 red onion', 'Fresh parsley', '3 tbsp olive oil', '2 tbsp lemon juice', 'Salt and pepper'],
+                    instructions: ['Cook quinoa according to package.', 'Let quinoa cool slightly.', 'Dice cucumber, tomatoes, and onion.', 'Combine vegetables with quinoa.', 'Add olives and feta.', 'Mix olive oil and lemon for dressing.', 'Toss and serve.'],
+                    tips: 'Add grilled chicken for extra protein.'
+                },
+                {
+                    name: 'Sweet Potato Black Bean Tacos',
+                    description: 'Roasted sweet potato and black bean tacos with chipotle crema.',
+                    tags: ['protein', 'budget', 'vitamins'],
+                    macros: { protein: '12g', carbs: '52g', fiber: '12g', calories: 380, time: '30 min', servings: 3 },
+                    color: '#f59e0b',
+                    ingredients: ['2 medium sweet potatoes', '1 can black beans', '6 corn tortillas', '1 avocado', '1/2 cup sour cream', '1 chipotle pepper', 'Lime', 'Cumin', 'Cilantro', 'Red cabbage'],
+                    instructions: ['Cube sweet potatoes, toss with oil and cumin.', 'Roast at 400°F for 25 minutes.', 'Blend sour cream with chipotle for crema.', 'Warm tortillas.', 'Fill with sweet potato and beans.', 'Top with cabbage, avocado, and crema.', 'Garnish with cilantro and lime.'],
+                    tips: 'Meal prep friendly - roast extra sweet potatoes for the week.'
+                },
+                {
+                    name: 'Miso Glazed Salmon',
+                    description: 'Japanese style salmon with sweet miso glaze.',
+                    tags: ['protein'],
+                    macros: { protein: '34g', carbs: '18g', fiber: '1g', calories: 420, time: '25 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['2 salmon fillets', '3 tbsp white miso paste', '2 tbsp mirin', '1 tbsp sake', '1 tbsp honey', 'Sesame seeds', 'Green onions', 'Steamed rice', 'Pickled ginger'],
+                    instructions: ['Mix miso, mirin, sake, and honey.', 'Marinate salmon for 15 minutes.', 'Broil salmon for 8-10 minutes.', 'Brush with extra glaze halfway.', 'Garnish with sesame seeds and green onions.', 'Serve with rice and ginger.'],
+                    tips: 'Watch carefully - miso burns easily under high heat.'
+                },
+                {
+                    name: 'Chickpea Curry',
+                    description: 'Creamy Indian chickpea curry with aromatic spices.',
+                    tags: ['protein', 'budget', 'vitamins'],
+                    macros: { protein: '14g', carbs: '48g', fiber: '10g', calories: 350, time: '30 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['2 cans chickpeas', '1 can coconut milk', '1 can diced tomatoes', '1 onion', '4 cloves garlic', '1 tbsp curry powder', '1 tsp turmeric', '1 tsp cumin', 'Fresh spinach', 'Basmati rice'],
+                    instructions: ['Sauté onion and garlic.', 'Add spices, cook 1 minute.', 'Add tomatoes, simmer 5 minutes.', 'Add chickpeas and coconut milk.', 'Simmer 15 minutes.', 'Stir in spinach.', 'Serve over rice.'],
+                    tips: 'Add paneer for extra protein and authenticity.'
+                },
+                {
+                    name: 'Zucchini Noodles with Pesto',
+                    description: 'Low-carb zucchini noodles with fresh basil pesto.',
+                    tags: ['vitamins'],
+                    macros: { protein: '8g', carbs: '12g', fiber: '4g', calories: 220, time: '15 min', servings: 2 },
+                    color: '#10b981',
+                    ingredients: ['3 medium zucchini', '2 cups fresh basil', '1/4 cup pine nuts', '1/3 cup parmesan', '2 cloves garlic', '1/3 cup olive oil', 'Cherry tomatoes', 'Salt and pepper'],
+                    instructions: ['Spiralize zucchini into noodles.', 'Blend basil, pine nuts, garlic, and parmesan.', 'Slowly add olive oil while blending.', 'Sauté zucchini noodles for 2-3 minutes.', 'Toss with pesto.', 'Top with halved tomatoes.'],
+                    tips: 'Don\'t overcook zucchini - keep them al dente.'
+                },
+                {
+                    name: 'Breakfast Quinoa Bowl',
+                    description: 'Protein-packed quinoa breakfast with fruits and nuts.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '12g', carbs: '48g', fiber: '6g', calories: 340, time: '20 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['1 cup quinoa', '2 cups milk', '1 banana', '1/2 cup berries', '2 tbsp maple syrup', '1/4 cup almonds', '1 tsp cinnamon', 'Vanilla extract'],
+                    instructions: ['Cook quinoa in milk with cinnamon and vanilla.', 'Simmer until creamy, about 15 minutes.', 'Slice banana.', 'Top quinoa with berries and banana.', 'Drizzle with maple syrup.', 'Add almonds.'],
+                    tips: 'Make ahead and reheat for quick breakfasts.'
+                },
+                {
+                    name: 'Korean Bibimbap',
+                    description: 'Korean rice bowl with vegetables, egg, and gochujang.',
+                    tags: ['protein', 'vitamins'],
+                    macros: { protein: '18g', carbs: '58g', fiber: '6g', calories: 450, time: '35 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['2 cups short grain rice', '2 cups spinach', '1 zucchini', '2 carrots', '1 cup bean sprouts', '4 eggs', 'Gochujang', 'Sesame oil', 'Soy sauce', 'Sesame seeds'],
+                    instructions: ['Cook rice.', 'Sauté each vegetable separately.', 'Season each with sesame oil and salt.', 'Fry eggs sunny side up.', 'Divide rice into bowls.', 'Arrange vegetables in sections.', 'Top with egg and gochujang.'],
+                    tips: 'Mix everything together before eating for best flavor.'
+                },
+                {
+                    name: 'Lemon Herb Roast Chicken',
+                    description: 'Juicy whole roasted chicken with lemon and herbs.',
+                    tags: ['protein'],
+                    macros: { protein: '40g', carbs: '5g', fiber: '1g', calories: 380, time: '90 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['1 whole chicken', '2 lemons', 'Fresh rosemary', 'Fresh thyme', '4 cloves garlic', 'Butter', 'Olive oil', 'Salt and pepper', 'Onion'],
+                    instructions: ['Preheat oven to 425°F.', 'Pat chicken dry, season inside and out.', 'Stuff with lemon, garlic, and herbs.', 'Rub butter under skin.', 'Place on bed of onions.', 'Roast 1 hour until internal temp reaches 165°F.', 'Rest 10 minutes before carving.'],
+                    tips: 'Save bones for homemade chicken stock.'
+                },
+                {
+                    name: 'Stuffed Bell Peppers',
+                    description: 'Colorful peppers stuffed with rice, beef, and cheese.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '24g', carbs: '32g', fiber: '4g', calories: 380, time: '45 min', servings: 4 },
+                    color: '#10b981',
+                    ingredients: ['4 bell peppers', '1 lb ground beef', '1 cup cooked rice', '1 can diced tomatoes', '1 onion', '2 cloves garlic', '1 cup shredded cheese', 'Italian herbs', 'Salt and pepper'],
+                    instructions: ['Cut tops off peppers, remove seeds.', 'Brown beef with onion and garlic.', 'Mix beef with rice and half the tomatoes.', 'Stuff peppers with mixture.', 'Place in baking dish.', 'Pour remaining tomatoes around peppers.', 'Top with cheese.', 'Bake at 375°F for 30 minutes.'],
+                    tips: 'Use a variety of colored peppers for presentation.'
+                },
+                {
+                    name: 'Vietnamese Pho',
+                    description: 'Aromatic Vietnamese beef noodle soup.',
+                    tags: ['protein'],
+                    macros: { protein: '28g', carbs: '48g', fiber: '3g', calories: 420, time: '3 hrs', servings: 4 },
+                    color: '#ef4444',
+                    ingredients: ['1 lb beef bones', '1 onion', '4 star anise', '3 whole cloves', 'Fish sauce', '1 lb rice noodles', 'Beef sirloin', 'Bean sprouts', 'Basil', 'Lime', 'Hoisin sauce', 'Sriracha'],
+                    instructions: ['Char onion over open flame.', 'Boil bones, drain, and rinse.', 'Simmer bones with charred onion and spices.', 'Cook 2-3 hours, strain broth.', 'Season with fish sauce.', 'Cook noodles.', 'Slice beef thin.', 'Assemble bowls with noodles, broth, and beef.', 'Serve with garnishes.'],
+                    tips: 'The longer you simmer, the richer the broth.'
+                },
+                {
+                    name: 'Cauliflower Fried Rice',
+                    description: 'Low-carb cauliflower "rice" with vegetables and egg.',
+                    tags: ['protein', 'vitamins'],
+                    macros: { protein: '12g', carbs: '18g', fiber: '6g', calories: 220, time: '20 min', servings: 3 },
+                    color: '#10b981',
+                    ingredients: ['1 head cauliflower', '3 eggs', '1 cup mixed vegetables', '3 green onions', '2 tbsp soy sauce', '1 tbsp sesame oil', 'Ginger', 'Garlic', 'Optional: shrimp or chicken'],
+                    instructions: ['Rice cauliflower in food processor.', 'Heat oil in large wok.', 'Scramble eggs, set aside.', 'Stir fry cauliflower rice for 4-5 minutes.', 'Add vegetables, ginger, and garlic.', 'Add soy sauce and sesame oil.', 'Mix in eggs.', 'Garnish with green onions.'],
+                    tips: 'Don\'t over-process cauliflower - keep it slightly chunky.'
+                },
+                {
+                    name: 'Crockpot Pulled Pork',
+                    description: 'Tender slow-cooked pulled pork for sandwiches.',
+                    tags: ['protein'],
+                    macros: { protein: '32g', carbs: '18g', fiber: '1g', calories: 380, time: '8 hrs', servings: 8 },
+                    color: '#8b5cf6',
+                    ingredients: ['4 lb pork shoulder', '1 onion', '4 cloves garlic', '1 cup BBQ sauce', '1/2 cup apple cider vinegar', '1/4 cup brown sugar', '1 tbsp paprika', '1 tbsp garlic powder', 'Burger buns', 'Coleslaw'],
+                    instructions: ['Season pork with spices.', 'Place in slow cooker with onion and garlic.', 'Add vinegar, cook on low 8 hours.', 'Shred pork with two forks.', 'Mix with BBQ sauce.', 'Serve on buns with coleslaw.'],
+                    tips: 'Freeze portions for quick meals later.'
+                },
+                {
+                    name: 'Greek Salad Bowl',
+                    description: 'Fresh Mediterranean salad with chickpeas.',
+                    tags: ['protein', 'vitamins', 'budget'],
+                    macros: { protein: '12g', carbs: '28g', fiber: '7g', calories: 320, time: '10 min', servings: 2 },
+                    color: '#10b981',
+                    ingredients: ['1 can chickpeas', '1 cucumber', '1 cup cherry tomatoes', '1/2 cup kalamata olives', '1/2 cup feta cheese', '1/4 red onion', '3 tbsp olive oil', '1 tbsp red wine vinegar', 'Dried oregano'],
+                    instructions: ['Drain and rinse chickpeas.', 'Dice cucumber and halve tomatoes.', 'Slice onion thinly.', 'Combine all vegetables in bowl.', 'Whisk olive oil, vinegar, and oregano.', 'Drizzle dressing over salad.', 'Top with feta.'],
+                    tips: 'Add grilled chicken to make it a complete meal.'
+                },
+                {
+                    name: 'Banana Oat Smoothie',
+                    description: 'Creamy protein smoothie with oats and peanut butter.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '14g', carbs: '52g', fiber: '6g', calories: 340, time: '5 min', servings: 1 },
+                    color: '#f59e0b',
+                    ingredients: ['1 ripe banana', '1/2 cup rolled oats', '1 cup milk', '1 tbsp peanut butter', '1 tbsp honey', '1/2 tsp vanilla', 'Ice cubes'],
+                    instructions: ['Add all ingredients to blender.', 'Blend until smooth.', 'Add more milk if too thick.', 'Pour and serve immediately.'],
+                    tips: 'Use frozen banana for thicker consistency.'
+                },
+                {
+                    name: 'Mushroom Stroganoff',
+                    description: 'Creamy vegetarian stroganoff with mushrooms.',
+                    tags: ['vitamins'],
+                    macros: { protein: '10g', carbs: '38g', fiber: '4g', calories: 380, time: '25 min', servings: 4 },
+                    color: '#8b5cf6',
+                    ingredients: ['16oz mushrooms', '1 onion', '3 cloves garlic', '1 cup vegetable broth', '1 cup sour cream', '2 tbsp flour', 'Egg noodles', 'Butter', 'Fresh parsley', 'Paprika'],
+                    instructions: ['Slice mushrooms and sauté in butter.', 'Add onion and garlic.', 'Sprinkle with flour, stir.', 'Add broth, simmer until thickened.', 'Stir in sour cream.', 'Serve over egg noodles.', 'Garnish with parsley and paprika.'],
+                    tips: 'Don\'t boil after adding sour cream.'
+                },
+                {
+                    name: 'Shrimp Avocado Salad',
+                    description: 'Light and refreshing salad with grilled shrimp.',
+                    tags: ['protein', 'vitamins'],
+                    macros: { protein: '28g', carbs: '12g', fiber: '6g', calories: 320, time: '15 min', servings: 2 },
+                    color: '#10b981',
+                    ingredients: ['1/2 lb shrimp', '2 cups mixed greens', '1 avocado', '1/2 cup cherry tomatoes', '1/4 red onion', 'Lemon juice', 'Olive oil', 'Salt and pepper', 'Old Bay seasoning'],
+                    instructions: ['Season shrimp with Old Bay.', 'Grill or sauté until pink.', 'Let shrimp cool slightly.', 'Arrange greens on plates.', 'Top with tomatoes, onion, and avocado.', 'Add shrimp.', 'Drizzle with lemon and olive oil.'],
+                    tips: 'Add mango for a tropical twist.'
+                },
+                {
+                    name: 'Banana Bread',
+                    description: 'Moist homemade banana bread with walnuts.',
+                    tags: ['budget'],
+                    macros: { protein: '6g', carbs: '48g', fiber: '3g', calories: 280, time: '60 min', servings: 8 },
+                    color: '#f59e0b',
+                    ingredients: ['3 ripe bananas', '1/3 cup melted butter', '3/4 cup sugar', '1 egg', '1 tsp vanilla', '1 tsp baking soda', '1/4 tsp salt', '1 1/2 cups flour', '1/2 cup walnuts'],
+                    instructions: ['Mash bananas in bowl.', 'Mix in butter.', 'Stir in sugar, egg, and vanilla.', 'Add baking soda and salt.', 'Fold in flour.', 'Add walnuts.', 'Pour into greased loaf pan.', 'Bake at 350°F for 55-60 minutes.'],
+                    tips: 'Use spotty bananas for best sweetness.'
+                },
+                {
+                    name: 'Thai Green Curry',
+                    description: 'Creamy coconut curry with vegetables and basil.',
+                    tags: ['protein'],
+                    macros: { protein: '18g', carbs: '22g', fiber: '4g', calories: 420, time: '30 min', servings: 4 },
+                    color: '#10b981',
+                    ingredients: ['1 can coconut milk', '3 tbsp green curry paste', '1 lb chicken breast', '1 bell pepper', '1 zucchini', '1 cup bamboo shoots', 'Fresh basil', 'Fish sauce', 'Brown sugar', 'Jasmine rice'],
+                    instructions: ['Fry curry paste in pan.', 'Add half the coconut milk.', 'Add chicken, cook through.', 'Add vegetables and remaining coconut milk.', 'Season with fish sauce and sugar.', 'Simmer until vegetables are tender.', 'Stir in basil.', 'Serve over rice.'],
+                    tips: 'Add tofu for vegetarian version.'
+                },
+                {
+                    name: 'Apple Cinnamon Oatmeal',
+                    description: 'Warm comforting oatmeal with fresh apples.',
+                    tags: ['budget', 'vitamins'],
+                    macros: { protein: '8g', carbs: '55g', fiber: '6g', calories: 280, time: '15 min', servings: 1 },
+                    color: '#ef4444',
+                    ingredients: ['1/2 cup rolled oats', '1 cup water or milk', '1 apple', '1 tbsp maple syrup', '1/2 tsp cinnamon', 'Pinch of salt', 'Walnuts', 'Butter'],
+                    instructions: ['Bring water/milk to boil.', 'Add oats, reduce heat.', 'Cook 5 minutes, stirring occasionally.', 'Dice apple, add to oatmeal.', 'Add cinnamon and salt.', 'Top with walnuts and maple syrup.'],
+                    tips: 'Add chia seeds for extra fiber.'
+                },
+                {
+                    name: 'Baked Sweet Potato',
+                    description: 'Simple baked sweet potato with your favorite toppings.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '4g', carbs: '42g', fiber: '7g', calories: 220, time: '45 min', servings: 1 },
+                    color: '#f59e0b',
+                    ingredients: ['1 large sweet potato', 'Butter', 'Salt and pepper', 'Optional toppings: cheese, beans, sour cream, green onions'],
+                    instructions: ['Preheat oven to 400°F.', 'Wash and dry sweet potato.', 'Poke with fork several times.', 'Bake 45 minutes until tender.', 'Split open.', 'Add butter, salt, and pepper.', 'Add your favorite toppings.'],
+                    tips: 'Microwave for 5 minutes for faster cooking.'
+                },
+                {
+                    name: 'White Chicken Chili',
+                    description: 'Hearty white bean chili with tender chicken.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '28g', carbs: '32g', fiber: '8g', calories: 320, time: '35 min', servings: 6 },
+                    color: '#f59e0b',
+                    ingredients: ['2 chicken breasts', '2 cans white beans', '1 can green chilis', '4 cups chicken broth', '1 onion', '3 cloves garlic', 'Cumin', 'Oregano', 'Sour cream', 'Cilantro'],
+                    instructions: ['Cook and shred chicken.', 'Sauté onion and garlic.', 'Add broth, beans, and chilis.', 'Add cumin and oregano.', 'Simmer 20 minutes.', 'Mash some beans for thickness.', 'Return chicken to pot.', 'Serve with sour cream and cilantro.'],
+                    tips: 'Garnish with tortilla strips for crunch.'
+                },
+                {
+                    name: 'Caprese Grilled Cheese',
+                    description: 'Elevated grilled cheese with tomato and basil.',
+                    tags: ['budget'],
+                    macros: { protein: '16g', carbs: '32g', fiber: '2g', calories: 420, time: '10 min', servings: 1 },
+                    color: '#ef4444',
+                    ingredients: ['2 slices sourdough', '2 slices fresh mozzarella', '1 tomato', 'Fresh basil', 'Butter', 'Balsamic glaze', 'Salt and pepper'],
+                    instructions: ['Butter one side of each bread slice.', 'Layer mozzarella, tomato, and basil on unbuttered side.', 'Season with salt and pepper.', 'Cook in skillet over medium heat.', 'Flip when golden.', 'Drizzle with balsamic glaze.'],
+                    tips: 'Add prosciutto for extra savory flavor.'
+                },
+                {
+                    name: 'Spinach Artichoke Dip',
+                    description: 'Creamy baked dip with spinach and artichokes.',
+                    tags: ['budget'],
+                    macros: { protein: '10g', carbs: '18g', fiber: '4g', calories: 280, time: '30 min', servings: 8 },
+                    color: '#10b981',
+                    ingredients: ['1 can artichoke hearts', '10oz frozen spinach', '8oz cream cheese', '1/2 cup mayonnaise', '1/2 cup parmesan', '1 cup mozzarella', '3 cloves garlic', 'Crackers', 'Bread for dipping'],
+                    instructions: ['Drain and chop artichokes.', 'Thaw and drain spinach.', 'Mix all ingredients together.', 'Spread in baking dish.', 'Top with extra mozzarella.', 'Bake at 350°F for 25 minutes.', 'Serve warm with crackers.'],
+                    tips: 'Make ahead and bake when ready to serve.'
+                },
+                {
+                    name: 'Coconut Rice',
+                    description: 'Fragrant rice cooked in coconut milk.',
+                    tags: ['budget'],
+                    macros: { protein: '4g', carbs: '52g', fiber: '2g', calories: 320, time: '25 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['1 cup jasmine rice', '1 can coconut milk', '1/2 cup water', '1 tbsp sugar', '1/2 tsp salt', 'Lime zest', 'Toasted coconut flakes', 'Fresh cilantro'],
+                    instructions: ['Rinse rice.', 'Combine coconut milk, water, sugar, and salt.', 'Bring to boil.', 'Add rice, reduce heat.', 'Cover and cook 18 minutes.', 'Fluff with fork.', 'Top with coconut flakes and cilantro.'],
+                    tips: 'Serve with Thai or Asian dishes.'
+                },
+                {
+                    name: 'Turkey Meatballs',
+                    description: 'Lean turkey meatballs in marinara sauce.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '28g', carbs: '22g', fiber: '3g', calories: 340, time: '35 min', servings: 4 },
+                    color: '#ef4444',
+                    ingredients: ['1 lb ground turkey', '1/2 cup breadcrumbs', '1 egg', '1/4 cup parmesan', '2 cloves garlic', 'Italian herbs', 'Salt and pepper', '2 cups marinara sauce', 'Spaghetti'],
+                    instructions: ['Mix turkey with breadcrumbs, egg, parmesan, and seasonings.', 'Form into balls.', 'Brown meatballs in oven at 400°F for 20 minutes.', 'Heat marinara sauce.', 'Add meatballs to sauce.', 'Simmer 10 minutes.', 'Serve over spaghetti.'],
+                    tips: 'Freeze raw meatballs for quick weeknight meals.'
+                },
+                {
+                    name: 'Fruit Salad with Honey Lime',
+                    description: 'Fresh seasonal fruit with bright honey lime dressing.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '3g', carbs: '32g', fiber: '4g', calories: 140, time: '10 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['2 cups strawberries', '1 cup blueberries', '2 cups grapes', '2 cups melon', '2 kiwis', '2 tbsp honey', '2 tbsp lime juice', 'Fresh mint'],
+                    instructions: ['Wash and cut all fruit.', 'Combine in large bowl.', 'Mix honey and lime juice.', 'Drizzle over fruit.', 'Toss gently.', 'Garnish with mint.', 'Chill until serving.'],
+                    tips: 'Add granola for a breakfast bowl version.'
+                },
+                {
+                    name: 'Blackened Chicken',
+                    description: 'Spicy blackened chicken with creamy sauce.',
+                    tags: ['protein'],
+                    macros: { protein: '32g', carbs: '8g', fiber: '2g', calories: 320, time: '25 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['2 chicken breasts', '2 tbsp paprika', '1 tbsp garlic powder', '1 tbsp onion powder', '1 tsp cayenne', '1 tsp thyme', 'Butter', 'Heavy cream', 'Cajun seasoning', 'Rice'],
+                    instructions: ['Mix all spices for blackening seasoning.', 'Coat chicken generously.', 'Sear in hot cast iron with butter.', 'Cook through, turning occasionally.', 'Remove chicken, rest.', 'Make cream sauce in same pan.', 'Slice chicken, serve with sauce over rice.'],
+                    tips: 'Adjust cayenne for desired heat level.'
+                },
+                {
+                    name: 'Ratatouille',
+                    description: 'Classic French vegetable stew with tomatoes and herbs.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '5g', carbs: '22g', fiber: '6g', calories: 180, time: '45 min', servings: 4 },
+                    color: '#10b981',
+                    ingredients: ['1 eggplant', '2 zucchini', '1 yellow squash', '2 bell peppers', '1 can diced tomatoes', '1 onion', '4 cloves garlic', 'Fresh thyme', 'Fresh rosemary', 'Olive oil'],
+                    instructions: ['Slice all vegetables into rounds.', 'Sauté onion and garlic.', 'Add tomatoes, simmer.', 'Arrange vegetable slices over sauce.', 'Drizzle with olive oil.', 'Season with thyme and rosemary.', 'Cover and cook 30-40 minutes.'],
+                    tips: 'Layer vegetables in concentric circles for beautiful presentation.'
+                },
+                {
+                    name: 'Pea and Mint Soup',
+                    description: 'Bright green spring soup with fresh mint.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '8g', carbs: '28g', fiber: '8g', calories: 200, time: '25 min', servings: 4 },
+                    color: '#10b981',
+                    ingredients: ['4 cups frozen peas', '1 onion', '2 cloves garlic', '4 cups vegetable broth', '1/2 cup cream', 'Fresh mint', 'Olive oil', 'Salt and pepper', 'Croutons'],
+                    instructions: ['Sauté onion and garlic.', 'Add broth and peas.', 'Simmer 10 minutes.', 'Add mint leaves.', 'Blend until smooth.', 'Stir in cream.', 'Season to taste.', 'Top with croutons.'],
+                    tips: 'Don\'t overcook peas - they lose color and sweetness.'
                 }
             ];
 
@@ -2903,6 +3193,417 @@ Getting kids to eat vegetables:
 • Don't force, just offer
 • Try different preparations
 • Hide veggies in sauces and smoothies`
+                },
+                {
+                    id: 7,
+                    title: 'Hydration and Water Intake',
+                    category: 'basics',
+                    readTime: '4 min',
+                    color: '#06b6d4',
+                    summary: 'Why staying hydrated is essential for your health.',
+                    content: `Water makes up about 60% of your body weight and is essential for:
+• Regulating body temperature
+• Digesting food
+• Transporting nutrients
+• Removing waste
+• Lubricating joints
+
+How much water do you need?
+• About 8 glasses (64 oz) daily for adults
+• More if you're active or it's hot
+• Less from food (about 20% of intake)
+
+Signs of dehydration:
+• Dark urine color
+• Fatigue and headaches
+• Dry skin and lips
+• Dizziness
+• Decreased urination
+
+Tips to drink more water:
+• Carry a reusable water bottle
+• Set reminders on your phone
+• Drink a glass before each meal
+• Add lemon or fruit for flavor
+• Eat water-rich foods like cucumbers and watermelon`
+                },
+                {
+                    id: 8,
+                    title: 'Fiber: The Unsung Hero',
+                    category: 'vitamins',
+                    readTime: '4 min',
+                    color: '#84cc16',
+                    summary: 'Why fiber is crucial for digestive health.',
+                    content: `Fiber is a type of carbohydrate your body can't digest, but it's essential for health.
+
+Types of fiber:
+Soluble fiber - dissolves in water, helps lower cholesterol
+• Oats, beans, apples, citrus fruits
+
+Insoluble fiber - adds bulk to stool, prevents constipation
+• Whole grains, nuts, vegetables, wheat bran
+
+Benefits of fiber:
+• Keeps you regular
+• Lowers cholesterol levels
+• Helps control blood sugar
+• Maintains healthy weight
+• Feeds good gut bacteria
+
+How much do you need?
+• Women: 25g per day
+• Men: 38g per day
+• Most people only get about 15g
+
+Best high-fiber foods:
+• Beans (15g per cup)
+• Berries (8g per cup)
+• Whole grains
+• Vegetables
+• Nuts and seeds`
+                },
+                {
+                    id: 9,
+                    title: 'Food Assistance Programs',
+                    category: 'budget',
+                    readTime: '5 min',
+                    color: '#8b5cf6',
+                    summary: 'Government and community programs that can help.',
+                    content: `If you're struggling to afford food, help is available:
+
+Government Programs:
+SNAP (Supplemental Nutrition Assistance Program)
+• Helps low-income families buy food
+• Benefits loaded on EBT card
+• Can be used at most grocery stores
+
+WIC (Women, Infants, and Children)
+• For pregnant women and children under 5
+• Provides nutritious foods
+• Includes health screenings
+
+School Meals
+• Free breakfast and lunch programs
+• Available to all income levels
+• Summer meal programs also exist
+
+Community Resources:
+Food Banks and Pantries
+• Free food distribution
+• No income requirements at many
+• Find at feedingamerica.org
+
+Community Gardens
+• Free fresh produce
+• Educational opportunities
+• Social connection
+
+Farmers Markets
+• Many accept SNAP/EBT
+• Some offer match programs
+• Fresh, local produce
+
+How to Apply:
+• Contact your local social services office
+• Ask about eligibility requirements
+• Don't be embarrassed - these programs help millions of families`
+                },
+                {
+                    id: 10,
+                    title: 'Iron Deficiency and Anemia',
+                    category: 'health',
+                    readTime: '5 min',
+                    color: '#ef4444',
+                    summary: 'Understanding iron deficiency and how to prevent it.',
+                    content: `Iron is essential for making hemoglobin, which carries oxygen in your blood.
+
+Who is at risk?
+• Women with heavy periods
+• Pregnant women
+• Children and teenagers
+• Vegetarians and vegans
+• People with digestive disorders
+
+Signs of iron deficiency:
+• Fatigue and weakness
+• Pale skin
+• Shortness of breath
+• Cold hands and feet
+• Brittle nails
+• Headaches
+• Cravings for non-food items (ice, dirt)
+
+Iron-rich foods:
+Animal sources (heme iron - easier to absorb):
+• Red meat
+• Poultry
+• Fish and shellfish
+• Eggs
+
+Plant sources (non-heme iron):
+• Beans and lentils
+• Spinach and leafy greens
+• Fortified cereals
+• Tofu
+• Pumpkin seeds
+
+Tips to increase iron absorption:
+• Eat vitamin C with iron-rich foods
+• Avoid tea/coffee with meals
+• Cook in cast iron pans
+• Pair plant iron with meat`
+                },
+                {
+                    id: 11,
+                    title: 'Portion Control Basics',
+                    category: 'budget',
+                    readTime: '4 min',
+                    color: '#f59e0b',
+                    summary: 'Learn how to manage portion sizes for better health.',
+                    content: `Understanding portion sizes can help you eat right without feeling deprived.
+
+Visual guides (use your hand):
+• Palm = protein portion (3-4 oz)
+• Fist = one cup (grains, pasta)
+• cupped hand = one ounce of nuts
+• Thumb = one serving of fats/oils
+• Two hands cupped = one serving of vegetables
+
+Common serving size mistakes:
+• Pasta: 1/2 cup cooked (not the whole plate)
+• Rice: 1/3 cup cooked (about the size of a hockey puck)
+• Meat: 3-4 oz (deck of cards)
+• Cheese: 1.5 oz (4 dice)
+• Oil/butter: 1 tablespoon (thumb tip)
+
+Tips for portion control:
+• Use smaller plates
+• Measure at first, then eyeball
+• Don't eat from the bag or box
+• Serve food, then put it away
+• Eat slowly - it takes 20 minutes to feel full
+• Drink water before meals
+• Pre-portion snacks into bags`
+                },
+                {
+                    id: 12,
+                    title: 'Omega-3 Fatty Acids',
+                    category: 'vitamins',
+                    readTime: '4 min',
+                    color: '#06b6d4',
+                    summary: 'Why omega-3s matter and where to find them.',
+                    content: `Omega-3 fatty acids are essential fats your body needs but can't make on its own.
+
+Types of omega-3s:
+ALA (Alpha-linolenic acid)
+• Found in plant sources
+• Flax seeds, chia seeds, walnuts
+
+EPA and DHA
+• Found in fish and seafood
+• Most beneficial forms
+• Salmon, mackerel, sardines
+
+Health benefits:
+• Brain and eye development
+• Heart health
+• Reducing inflammation
+• Mood regulation
+• Joint health
+
+How much do you need?
+• Men: 1.6g ALA daily
+• Women: 1.1g ALA daily
+• 2-3 servings of fish per week
+
+Affordable omega-3 sources:
+• Canned sardines (with bones - calcium too!)
+• Canned salmon
+• Walnuts
+• Ground flaxseed
+• Chia seeds
+• Canola oil`
+                },
+                {
+                    id: 13,
+                    title: 'Food Storage and Preservation',
+                    category: 'safety',
+                    readTime: '5 min',
+                    color: '#10b981',
+                    summary: 'Maximize freshness and reduce food waste.',
+                    content: `Proper food storage saves money and prevents waste.
+
+Pantry staples (cool, dark place):
+• Rice and pasta: 1-2 years
+• Canned goods: 1-2 years past date
+• Flour: 6-12 months
+• Honey: virtually forever
+• Dried beans: 2-3 years
+
+Refrigerator guidelines:
+• Raw meat: 1-2 days
+• Cooked meat: 3-4 days
+• Fresh vegetables: 5-7 days
+• Leftovers: 3-4 days
+• Milk: 1 week past date
+
+Freezer storage:
+• Raw meat: 4-12 months
+• Cooked meat: 2-3 months
+• Bread: 3-6 months
+• Vegetables: 8-12 months
+• Prepared meals: 2-3 months
+
+Reduce food waste tips:
+• Shop with a list
+• Use older items first (FIFO)
+• Store properly (some veggies don't go in fridge!)
+• Use wilting produce in smoothies or soups
+• Freeze overripe bananas for baking
+• Make broth from vegetable scraps`
+                },
+                {
+                    id: 14,
+                    title: 'Healthy Snacking',
+                    category: 'budget',
+                    readTime: '4 min',
+                    color: '#84cc16',
+                    summary: 'Smart snack choices that keep you energized.',
+                    content: `Smart snacking can help maintain energy and prevent overeating at meals.
+
+Why snack?
+• Prevents extreme hunger
+• Maintains blood sugar
+• Provides nutrients
+• Boosts productivity
+
+Healthy snack components:
+• Protein (keeps you full)
+• Fiber (satisfying)
+• Healthy fats (brain fuel)
+
+Budget-friendly healthy snacks:
+• Apple + peanut butter
+• Carrot sticks + hummus
+• String cheese + crackers
+• Hard boiled eggs
+• Trail mix (make your own!)
+• Banana + yogurt
+• Popcorn (air-popped)
+• Frozen grapes
+
+Snacks to limit:
+• Chips and crackers
+• Candy and sweets
+• Sugary drinks
+• Processed snack foods
+
+When to snack:
+• Between meals if hungry
+• Before/after exercise
+• When blood sugar drops
+• Never as a substitute for meals
+
+Prep snacks ahead:
+• Wash and cut vegetables
+• Portion nuts into bags
+• Pre-make energy balls
+• Keep fruit visible on counter`
+                },
+                {
+                    id: 15,
+                    title: 'Calcium and Bone Health',
+                    category: 'health',
+                    readTime: '5 min',
+                    color: '#ffffff',
+                    summary: 'Building strong bones through nutrition.',
+                    content: `Calcium is essential for strong bones and teeth, muscle function, and nerve signaling.
+
+Why calcium matters:
+• Builds and maintains bone mass
+• Prevents osteoporosis
+• Supports muscle contractions
+• Helps blood clot properly
+
+Daily calcium needs:
+• Adults 19-50: 1,000mg
+• Women over 50: 1,200mg
+• Teens: 1,300mg
+
+Best calcium sources:
+Dairy products:
+• Milk (300mg per cup)
+• Yogurt (400mg per cup)
+• Cheese (200-300mg per serving)
+
+Non-dairy sources:
+• Fortified plant milks
+• Tofu (made with calcium)
+• Canned fish with bones
+• Leafy greens (collards, kale)
+• Fortified orange juice
+• Almonds
+
+Vitamin D is essential:
+Your body needs vitamin D to absorb calcium!
+• Sunlight exposure
+• Fortified milk
+• Fatty fish
+• Egg yolks
+
+Tips for absorption:
+• Get some sun daily
+• Eat calcium with meals
+• Limit caffeine and sodium
+• Stay physically active`
+                },
+                {
+                    id: 16,
+                    title: 'Sugar and Hidden Sweeteners',
+                    category: 'health',
+                    readTime: '5 min',
+                    color: '#f59e0b',
+                    summary: 'Understanding sugar and making healthier choices.',
+                    content: `Added sugars contribute to health problems without nutritional benefit.
+
+Types of sugar:
+Natural sugars - in whole foods
+• Fruit (fructose)
+• Milk (lactose)
+
+Added sugars - added during processing
+• Table sugar
+• High fructose corn syrup
+• Honey and maple syrup
+• Agave
+
+Where sugar hides:
+• Sodas and juices
+• Flavored yogurts
+• Granola bars
+• sauces (ketchup, BBQ, pasta)
+• Breads and crackers
+• "Healthy" snacks
+
+Daily sugar limits:
+• Women: 25g (6 tsp)
+• Men: 36g (9 tsp)
+• Children: 12-25g
+• Most Americans eat 82g daily!
+
+Effects of too much sugar:
+• Weight gain
+• Tooth decay
+• Energy crashes
+• Increased disease risk
+• Skin aging
+
+Healthier alternatives:
+• Fruit for sweetness
+• Cinnamon and vanilla
+• Unsweetened applesauce
+• Dates in baking
+• Small amounts of honey`
                 }
             ];
 
@@ -2911,7 +3612,9 @@ Getting kids to eat vegetables:
                 { key: 'basics', label: 'Basics' },
                 { key: 'protein', label: 'Protein' },
                 { key: 'budget', label: 'Budget' },
-                { key: 'vitamins', label: 'Vitamins' }
+                { key: 'vitamins', label: 'Vitamins' },
+                { key: 'health', label: 'Health' },
+                { key: 'safety', label: 'Food Safety' }
             ];
 
             const filteredArticles = activeCategory === 'all' 
@@ -3028,7 +3731,7 @@ Getting kids to eat vegetables:
         function Dashboard({ setActiveTab }) {
             const stats = [
                 { value: '800M+', label: 'People Affected', color: 'var(--danger)' },
-                { value: '50+', label: 'Recipes', color: 'var(--primary)' },
+                { value: '75+', label: 'Recipes', color: 'var(--primary)' },
                 { value: '95%', label: 'Accuracy', color: 'var(--secondary)' }
             ];
 
