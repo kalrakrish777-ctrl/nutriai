@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriAI - Fuel the Future</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #f59e0b;
+            --accent: #8b5cf6;
+            --danger: #ef4444;
+            --bg-dark: #0f0f1a;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --bg-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #root {
+            min-height: 100vh;
+        }
+
+        #three-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 15, 26, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.6s ease 0.2s both;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 0.6s ease 0.4s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            animation: fadeInUp 0.6s ease 0.6s both;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--bg-glass);
+            color: white;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card);
+            border-color: var(--primary);
+        }
+
+        .stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 4rem;
+            animation: fadeInUp 0.6s ease 0.8s both;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .section {
+            padding: 5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon.green { background: rgba(16, 185, 129, 0.2); color: var(--primary); }
+        .card-icon.orange { background: rgba(245, 158, 11, 0.2); color: var(--secondary); }
+        .card-icon.purple { background: rgba(139, 92, 246, 0.2); color: var(--accent); }
+        .card-icon.red { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .card-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .assessment-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .assessment-form {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section h3 {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .radio-option {
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .radio-option:hover {
+            border-color: var(--primary);
+        }
+
+        .radio-option.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .result-container {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .risk-level {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .risk-low { color: var(--primary); }
+        .risk-moderate { color: var(--secondary); }
+        .risk-high { color: var(--danger); }
+
+        .progress-ring {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 12;
+        }
+
+        .progress-bg {
+            stroke: var(--bg-card);
+        }
+
+        .progress-fill {
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .risk-factors {
+            margin-top: 1.5rem;
+        }
+
+        .risk-factor {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .risk-factor:last-child {
+            border-bottom: none;
+        }
+
+        .factor-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .factor-icon.positive { background: rgba(16, 185, 129, 0.2); color: var(--primary); }
+        .factor-icon.negative { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .recommendations {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .recommendations h4 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .recommendations ul {
+            list-style: none;
+        }
+
+        .recommendations li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .recommendations li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        .map-container {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            height: 500px;
+            position: relative;
+        }
+
+        .map-placeholder {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+
+        .map-placeholder svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .map-markers {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .map-marker {
+            padding: 0.5rem 1rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .map-marker:hover,
+        .map-marker.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .location-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+
+        .location-card:hover {
+            border-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .location-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .location-icon.bank { background: rgba(16, 185, 129, 0.2); color: var(--primary); }
+        .location-icon.market { background: rgba(245, 158, 11, 0.2); color: var(--secondary); }
+        .location-icon.kitchen { background: rgba(139, 92, 246, 0.2); color: var(--accent); }
+
+        .location-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .location-info p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .location-distance {
+            font-size: 0.75rem;
+            color: var(--primary);
+            margin-top: 0.25rem;
+        }
+
+        .meals-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .meal-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .meal-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .meal-image {
+            height: 180px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .meal-image::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .meal-image svg {
+            width: 64px;
+            height: 64px;
+            opacity: 0.9;
+        }
+
+        .meal-content {
+            padding: 1.5rem;
+        }
+
+        .meal-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .meal-tag {
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-card);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .meal-tag.protein { color: var(--danger); }
+        .meal-tag.vitamins { color: var(--primary); }
+        .meal-tag.budget { color: var(--secondary); }
+
+        .meal-content h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meal-content p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .meal-macros {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .macro {
+            text-align: center;
+        }
+
+        .macro-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .macro-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .exchange-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .exchange-form {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .exchange-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .exchange-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .exchange-item:hover {
+            border-color: var(--primary);
+        }
+
+        .exchange-item-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .exchange-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .exchange-details h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .exchange-details p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .exchange-distance {
+            font-size: 0.85rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .contact-btn {
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .contact-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .glow {
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .assessment-form {
+                padding: 1.5rem;
+            }
+        }
+
+        .loader {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--bg-card);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="three-bg"></div>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const threeScript = document.createElement('script');
+        threeScript.innerHTML = `
+            (function() {
+                const container = document.getElementById('three-bg');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                container.appendChild(renderer.domElement);
+
+                const geometry = new THREE.TorusKnotGeometry(2, 0.5, 128, 32);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: 0x10b981,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const torusKnot = new THREE.Mesh(geometry, material);
+                scene.add(torusKnot);
+
+                const particlesGeometry = new THREE.BufferGeometry();
+                const particlesCount = 2000;
+                const posArray = new Float32Array(particlesCount * 3);
+                for(let i = 0; i < particlesCount * 3; i++) {
+                    posArray[i] = (Math.random() - 0.5) * 20;
+                }
+                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                const particlesMaterial = new THREE.PointsMaterial({
+                    size: 0.02,
+                    color: 0xf59e0b,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+                scene.add(particlesMesh);
+
+                camera.position.z = 6;
+
+                let mouseX = 0;
+                let mouseY = 0;
+                document.addEventListener('mousemove', (e) => {
+                    mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                    mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+                });
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    torusKnot.rotation.x += 0.002;
+                    torusKnot.rotation.y += 0.003;
+                    particlesMesh.rotation.y += 0.0005;
+                    
+                    camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.05;
+                    camera.position.y += (mouseY * 0.5 - camera.position.y) * 0.05;
+                    camera.lookAt(scene.position);
+                    
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            })();
+        `;
+        document.body.appendChild(threeScript);
+
+        function Logo() {
+            return (
+                <div className="logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                        <path d="M12 6v6l4 2"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    </svg>
+                    NutriAI
+                </div>
+            );
+        }
+
+        function Navbar() {
+            const scrollTo = (id) => {
+                document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            return (
+                <nav className="navbar">
+                    <Logo />
+                    <ul className="nav-links">
+                        <li><a href="#home" onClick={(e) => { e.preventDefault(); scrollTo('home'); }}>Home</a></li>
+                        <li><a href="#features" onClick={(e) => { e.preventDefault(); scrollTo('features'); }}>Features</a></li>
+                        <li><a href="#assessment" onClick={(e) => { e.preventDefault(); scrollTo('assessment'); }}>Assessment</a></li>
+                        <li><a href="#resources" onClick={(e) => { e.preventDefault(); scrollTo('resources'); }}>Resources</a></li>
+                        <li><a href="#meals" onClick={(e) => { e.preventDefault(); scrollTo('meals'); }}>Meals</a></li>
+                        <li><a href="#exchange" onClick={(e) => { e.preventDefault(); scrollTo('exchange'); }}>Exchange</a></li>
+                    </ul>
+                </nav>
+            );
+        }
+
+        function Hero() {
+            return (
+                <section className="hero" id="home">
+                    <div className="hero-badge">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                        </svg>
+                        Fuel the Future Hackathon 2026
+                    </div>
+                    <h1>AI-Powered <span>Nutrition</span> for Everyone</h1>
+                    <p>Combating malnutrition through intelligent risk assessment, community resources, and personalized meal planning. Making healthy nutrition accessible to underserved communities.</p>
+                    <div className="hero-buttons">
+                        <button className="btn btn-primary" onClick={() => document.getElementById('assessment')?.scrollIntoView({ behavior: 'smooth' })}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                            Start Assessment
+                        </button>
+                        <button className="btn btn-secondary" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
+                            Learn More
+                        </button>
+                    </div>
+                    <div className="stats">
+                        <div className="stat">
+                            <div className="stat-value">800M+</div>
+                            <div className="stat-label">People Affected</div>
+                        </div>
+                        <div className="stat">
+                            <div className="stat-value">50+</div>
+                            <div className="stat-label">Food Resources</div>
+                        </div>
+                        <div className="stat">
+                            <div className="stat-value">95%</div>
+                            <div className="stat-label">Assessment Accuracy</div>
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        function Features() {
+            const features = [
+                {
+                    icon: 'brain',
+                    color: 'green',
+                    title: 'AI Risk Assessment',
+                    description: 'Machine learning-powered malnutrition risk evaluation based on demographics, symptoms, and dietary patterns. Get instant insights and personalized recommendations.'
+                },
+                {
+                    icon: 'map',
+                    color: 'orange',
+                    title: 'Resource Locator',
+                    description: 'Find nearby food banks, community kitchens, fresh markets, and nutrition programs. Interactive map with real-time availability and directions.'
+                },
+                {
+                    icon: 'utensils',
+                    color: 'purple',
+                    title: 'Smart Meal Plans',
+                    description: 'AI-generated meal suggestions based on available ingredients, nutritional needs, and budget constraints. Make the most of what you have.'
+                },
+                {
+                    icon: 'users',
+                    color: 'green',
+                    title: 'Community Exchange',
+                    description: 'Connect with neighbors to share surplus food and ingredients. Build a community network that fights food waste and hunger together.'
+                }
+            ];
+
+            const icons = {
+                brain: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a8 8 0 0 0-8 8c0 3.5 2 6.5 5 8v4h6v-4c3-1.5 5-4.5 5-8a8 8 0 0 0-8-8z"/><path d="M12 2v4m-4 4h8"/></svg>,
+                map: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+                utensils: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>,
+                users: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            };
+
+            return (
+                <section className="section" id="features">
+                    <div className="section-header">
+                        <h2>How NutriAI <span style={{color: 'var(--primary)'}}>Helps</span></h2>
+                        <p>Comprehensive tools to assess, connect, and nourish communities in need</p>
+                    </div>
+                    <div className="cards-grid">
+                        {features.map((feature, index) => (
+                            <div className="card" key={index}>
+                                <div className={`card-icon ${feature.color}`}>
+                                    {icons[feature.icon]}
+                                </div>
+                                <h3>{feature.title}</h3>
+                                <p>{feature.description}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        }
+
+        function Assessment() {
+            const [formData, setFormData] = useState({
+                age: '',
+                gender: '',
+                household: '',
+                income: '',
+                symptoms: [],
+                diet: '',
+                access: '',
+                concerns: ''
+            });
+            const [result, setResult] = useState(null);
+            const [loading, setLoading] = useState(false);
+
+            const symptoms = [
+                'Fatigue', 'Weight Loss', 'Hair Loss', 'Poor Wound Healing',
+                'Frequent Illness', 'Dizziness', 'Muscle Weakness', 'Poor Appetite'
+            ];
+
+            const handleSymptomToggle = (symptom) => {
+                setFormData(prev => ({
+                    ...prev,
+                    symptoms: prev.symptoms.includes(symptom)
+                        ? prev.symptoms.filter(s => s !== symptom)
+                        : [...prev.symptoms, symptom]
+                }));
+            };
+
+            const calculateRisk = () => {
+                setLoading(true);
+                setTimeout(() => {
+                    let score = 0;
+                    
+                    if (formData.income === 'low') score += 30;
+                    else if (formData.income === 'medium') score += 15;
+                    
+                    if (formData.access === 'limited') score += 25;
+                    else if (formData.access === 'some') score += 10;
+                    
+                    score += formData.symptoms.length * 5;
+                    
+                    if (formData.diet === 'poor') score += 20;
+                    else if (formData.diet === 'fair') score += 10;
+                    
+                    if (parseInt(formData.household) > 4) score += 10;
+                    
+                    score = Math.min(100, score);
+                    
+                    let level, className, recommendations;
+                    if (score < 30) {
+                        level = 'Low Risk';
+                        className = 'risk-low';
+                        recommendations = [
+                            'Maintain a balanced diet with variety of foods',
+                            'Continue regular meals and hydration',
+                            'Consider a daily multivitamin during winter months'
+                        ];
+                    } else if (score < 60) {
+                        level = 'Moderate Risk';
+                        className = 'risk-moderate';
+                        recommendations = [
+                            'Increase protein intake with beans, eggs, and lean meats',
+                            'Add more fruits and vegetables to each meal',
+                            'Visit a local food bank for supplementary support',
+                            'Consider meeting with a nutrition counselor'
+                        ];
+                    } else {
+                        level = 'High Risk';
+                        className = 'risk-high';
+                        recommendations = [
+                            'Urgent: Connect with local food assistance programs',
+                            'Schedule a health checkup with a primary care provider',
+                            'Prioritize protein and calorie-dense foods',
+                            'Reach out to community nutrition programs immediately'
+                        ];
+                    }
+
+                    setResult({
+                        score,
+                        level,
+                        className,
+                        recommendations,
+                        factors: [
+                            { type: formData.income === 'low' ? 'negative' : 'positive', text: `Income level: ${formData.income || 'Not specified'}` },
+                            { type: formData.access === 'limited' ? 'negative' : 'positive', text: `Food access: ${formData.access || 'Not specified'}` },
+                            { type: formData.symptoms.length > 3 ? 'negative' : 'positive', text: `${formData.symptoms.length} nutritional symptoms reported` },
+                            { type: formData.diet === 'poor' ? 'negative' : 'positive', text: `Diet quality: ${formData.diet || 'Not specified'}` }
+                        ]
+                    });
+                    setLoading(false);
+                }, 2000);
+            };
+
+            const circumference = 2 * Math.PI * 80;
+            const offset = circumference - (result?.score / 100) * circumference;
+
+            return (
+                <section className="section" id="assessment">
+                    <div className="section-header">
+                        <h2>AI Nutrition <span style={{color: 'var(--primary)'}}>Risk Assessment</span></h2>
+                        <p>Answer a few questions to receive personalized malnutrition risk evaluation and recommendations</p>
+                    </div>
+                    <div className="assessment-container">
+                        <div className="assessment-form">
+                            <div className="form-section">
+                                <h3>Basic Information</h3>
+                                <div className="form-group">
+                                    <label>Age</label>
+                                    <select value={formData.age} onChange={(e) => setFormData({...formData, age: e.target.value})}>
+                                        <option value="">Select age range</option>
+                                        <option value="child">Child (5-12)</option>
+                                        <option value="teen">Teen (13-19)</option>
+                                        <option value="adult">Adult (20-45)</option>
+                                        <option value="middle">Middle Age (46-65)</option>
+                                        <option value="senior">Senior (65+)</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Gender</label>
+                                    <div className="radio-group">
+                                        {['Male', 'Female', 'Other'].map(g => (
+                                            <div key={g} className={`radio-option ${formData.gender === g ? 'selected' : ''}`} onClick={() => setFormData({...formData, gender: g})}>
+                                                {g}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Household Size</label>
+                                    <select value={formData.household} onChange={(e) => setFormData({...formData, household: e.target.value})}>
+                                        <option value="">Select</option>
+                                        <option value="1">1 person</option>
+                                        <option value="2">2-3 people</option>
+                                        <option value="4">4-5 people</option>
+                                        <option value="5">6+ people</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="form-section">
+                                <h3>Economic Factors</h3>
+                                <div className="form-group">
+                                    <label>Monthly Food Budget</label>
+                                    <select value={formData.income} onChange={(e) => setFormData({...formData, income: e.target.value})}>
+                                        <option value="">Select budget range</option>
+                                        <option value="low">Under $200</option>
+                                        <option value="medium">$200 - $500</option>
+                                        <option value="high">$500+</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="form-section">
+                                <h3>Health Symptoms</h3>
+                                <p style={{color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem'}}>Select any symptoms you or your family have experienced recently</p>
+                                <div className="radio-group">
+                                    {symptoms.map(symptom => (
+                                        <div key={symptom} className={`radio-option ${formData.symptoms.includes(symptom) ? 'selected' : ''}`} onClick={() => handleSymptomToggle(symptom)}>
+                                            {symptom}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="form-section">
+                                <h3>Diet & Access</h3>
+                                <div className="form-group">
+                                    <label>Diet Quality (past week)</label>
+                                    <div className="radio-group">
+                                        {['Excellent', 'Good', 'Fair', 'Poor'].map(d => (
+                                            <div key={d} className={`radio-option ${formData.diet === d.toLowerCase() ? 'selected' : ''}`} onClick={() => setFormData({...formData, diet: d.toLowerCase()})}>
+                                                {d}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Access to Fresh Food</label>
+                                    <select value={formData.access} onChange={(e) => setFormData({...formData, access: e.target.value})}>
+                                        <option value="">Select</option>
+                                        <option value="easy">Easy - within 1 mile</option>
+                                        <option value="some">Moderate - 1-5 miles</option>
+                                        <option value="limited">Limited - 5+ miles or difficult</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button className="btn btn-primary submit-btn" onClick={calculateRisk} disabled={loading}>
+                                {loading ? 'Analyzing...' : 'Get My Risk Assessment'}
+                            </button>
+
+                            {loading && (
+                                <div className="loader">
+                                    <div className="spinner"></div>
+                                </div>
+                            )}
+                        </div>
+
+                        {result && !loading && (
+                            <div className="result-container">
+                                <div className={`risk-level ${result.className}`}>{result.level}</div>
+                                <div className="progress-ring">
+                                    <svg width="200" height="200">
+                                        <circle className="progress-bg" cx="100" cy="100" r="80"/>
+                                        <circle className="progress-fill" cx="100" cy="100" r="80" 
+                                            stroke={result.score < 30 ? '#10b981' : result.score < 60 ? '#f59e0b' : '#ef4444'}
+                                            strokeDasharray={circumference}
+                                            strokeDashoffset={offset}
+                                        />
+                                    </svg>
+                                </div>
+                                <p style={{textAlign: 'center', color: 'var(--text-secondary)'}}>
+                                    Risk Score: <strong style={{color: 'white'}}>{result.score}/100</strong>
+                                </p>
+
+                                <div className="risk-factors">
+                                    <h4 style={{marginBottom: '1rem'}}>Contributing Factors</h4>
+                                    {result.factors.map((factor, i) => (
+                                        <div className="risk-factor" key={i}>
+                                            <div className={`factor-icon ${factor.type}`}>
+                                                {factor.type === 'positive' ? (
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                                                ) : (
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                                                )}
+                                            </div>
+                                            <span>{factor.text}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="recommendations">
+                                    <h4>Personalized Recommendations</h4>
+                                    <ul>
+                                        {result.recommendations.map((rec, i) => (
+                                            <li key={i}>{rec}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            );
+        }
+
+        function Resources() {
+            const [activeFilter, setActiveFilter] = useState('all');
+            const [showAll, setShowAll] = useState(false);
+
+            const locations = [
+                { type: 'bank', name: 'Community Food Bank', address: '123 Hope Street', distance: '0.3 mi', hours: 'Mon-Sat 9am-5pm' },
+                { type: 'market', name: 'Fresh Farmers Market', address: '456 Green Ave', distance: '0.8 mi', hours: 'Tue, Thu, Sat 7am-2pm' },
+                { type: 'kitchen', name: 'St. Mary\'s Soup Kitchen', address: '789 Charity Lane', distance: '1.2 mi', hours: 'Daily 11am-2pm' },
+                { type: 'bank', name: 'Westside Pantry', address: '321 Community Dr', distance: '1.5 mi', hours: 'Mon-Fri 10am-6pm' },
+                { type: 'market', name: 'Mobile Produce Truck', address: 'Rotating Locations', distance: 'Various', hours: 'Check schedule' },
+                { type: 'kitchen', name: 'New Beginnings Cafe', address: '555 Support Blvd', distance: '2.0 mi', hours: 'Mon-Wed-Fri 5pm-8pm' },
+                { type: 'bank', name: 'Youth Nutrition Center', address: '888 Future Way', distance: '2.3 mi', hours: 'After school hours' },
+                { type: 'market', name: 'Community Garden', address: 'Parkside Community Center', distance: '0.5 mi', hours: 'Dawn to Dusk' }
+            ];
+
+            const filteredLocations = activeFilter === 'all' 
+                ? locations 
+                : locations.filter(l => l.type === activeFilter);
+
+            const displayedLocations = showAll ? filteredLocations : filteredLocations.slice(0, 6);
+
+            return (
+                <section className="section" id="resources">
+                    <div className="section-header">
+                        <h2>Food <span style={{color: 'var(--primary)'}}>Resources</span></h2>
+                        <p>Find nearby food banks, markets, and community kitchens in your area</p>
+                    </div>
+                    
+                    <div className="map-container">
+                        <div className="map-markers">
+                            {[
+                                { key: 'all', label: 'All' },
+                                { key: 'bank', label: 'Food Banks' },
+                                { key: 'market', label: 'Markets' },
+                                { key: 'kitchen', label: 'Kitchens' }
+                            ].map(filter => (
+                                <div 
+                                    key={filter.key}
+                                    className={`map-marker ${activeFilter === filter.key ? 'active' : ''}`}
+                                    onClick={() => setActiveFilter(filter.key)}
+                                >
+                                    {filter.label}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="map-placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            <p>Interactive Map</p>
+                            <p style={{fontSize: '0.8rem'}}>Showing resources near your location</p>
+                        </div>
+                    </div>
+
+                    <div style={{marginTop: '2rem'}}>
+                        <div className="map-grid">
+                            {displayedLocations.map((location, i) => (
+                                <div className="location-card" key={i}>
+                                    <div className={`location-icon ${location.type}`}>
+                                        {location.type === 'bank' && (
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                                <path d="M9 22V12h6v10"/>
+                                            </svg>
+                                        )}
+                                        {location.type === 'market' && (
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                                                <path d="M3 6h18"/>
+                                                <path d="M16 10a4 4 0 0 1-8 0"/>
+                                            </svg>
+                                        )}
+                                        {location.type === 'kitchen' && (
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                                                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                                                <path d="M6 1v3"/>
+                                                <path d="M10 1v3"/>
+                                                <path d="M14 1v3"/>
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <div className="location-info">
+                                        <h4>{location.name}</h4>
+                                        <p>{location.address}</p>
+                                        <p>{location.hours}</p>
+                                        <div className="location-distance">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                            </svg>
+                                            {location.distance}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        {filteredLocations.length > 6 && (
+                            <div style={{textAlign: 'center', marginTop: '1.5rem'}}>
+                                <button className="btn btn-secondary" onClick={() => setShowAll(!showAll)}>
+                                    {showAll ? 'Show Less' : `Show All (${filteredLocations.length})`}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            );
+        }
+
+        function Meals() {
+            const meals = [
+                {
+                    name: 'Protein-Packed Lentil Stew',
+                    description: 'Hearty and filling lentil stew with carrots, celery, and warming spices. High in protein and fiber.',
+                    tags: ['protein', 'budget', 'vitamins'],
+                    macros: { protein: '18g', carbs: '45g', fiber: '12g' },
+                    color: '#10b981'
+                },
+                {
+                    name: 'Rainbow Rice Bowl',
+                    description: 'Colorful bowl with brown rice, roasted vegetables, and tahini dressing. Packed with vitamins A, C, and K.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '12g', carbs: '62g', fiber: '8g' },
+                    color: '#f59e0b'
+                },
+                {
+                    name: 'Egg Fried Rice',
+                    description: 'Quick and nutritious fried rice with eggs, peas, carrots, and minimal oil. Perfect for using leftover rice.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '14g', carbs: '55g', fiber: '4g' },
+                    color: '#8b5cf6'
+                },
+                {
+                    name: 'Bean & Veggie Tacos',
+                    description: 'Black bean and vegetable tacos with fresh salsa and avocado. High in protein and healthy fats.',
+                    tags: ['protein', 'vitamins'],
+                    macros: { protein: '15g', carbs: '48g', fiber: '14g' },
+                    color: '#ef4444'
+                },
+                {
+                    name: 'Oatmeal Power Bowl',
+                    description: 'Steel-cut oats with bananas, nuts, and honey. Sustained energy with complex carbs and protein.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '10g', carbs: '65g', fiber: '7g' },
+                    color: '#06b6d4'
+                },
+                {
+                    name: 'Mediterranean Salad',
+                    description: 'Fresh cucumber, tomato, olives, and feta cheese with olive oil dressing. Rich in healthy fats.',
+                    tags: ['vitamins'],
+                    macros: { protein: '8g', carbs: '20g', fiber: '6g' },
+                    color: '#84cc16'
+                }
+            ];
+
+            return (
+                <section className="section" id="meals">
+                    <div className="section-header">
+                        <h2>Smart <span style={{color: 'var(--primary)'}}>Meal Plans</span></h2>
+                        <p>Nutritious, budget-friendly meals tailored to your available ingredients and nutritional needs</p>
+                    </div>
+                    <div className="meals-container">
+                        {meals.map((meal, i) => (
+                            <div className="meal-card" key={i}>
+                                <div className="meal-image" style={{background: `linear-gradient(135deg, ${meal.color}, ${meal.color}88)`}}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
+                                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                        <path d="M7 2v20"/>
+                                        <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+                                    </svg>
+                                </div>
+                                <div className="meal-content">
+                                    <div className="meal-tags">
+                                        {meal.tags.map((tag, j) => (
+                                            <span key={j} className={`meal-tag ${tag}`}>{tag}</span>
+                                        ))}
+                                    </div>
+                                    <h3>{meal.name}</h3>
+                                    <p>{meal.description}</p>
+                                    <div className="meal-macros">
+                                        <div className="macro">
+                                            <div className="macro-value">{meal.macros.protein}</div>
+                                            <div className="macro-label">Protein</div>
+                                        </div>
+                                        <div className="macro">
+                                            <div className="macro-value">{meal.macros.carbs}</div>
+                                            <div className="macro-label">Carbs</div>
+                                        </div>
+                                        <div className="macro">
+                                            <div className="macro-value">{meal.macros.fiber}</div>
+                                            <div className="macro-label">Fiber</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        }
+
+        function Exchange() {
+            const [items, setItems] = useState([
+                { id: 1, name: 'Fresh Tomatoes', amount: '2 lbs', user: 'Maria G.', distance: '0.2 mi', type: 'give' },
+                { id: 2, name: 'Canned Beans', amount: '6 cans', user: 'James L.', distance: '0.5 mi', type: 'need' },
+                { id: 3, name: 'Garden Zucchini', amount: '4 pieces', user: 'Sarah M.', distance: '0.8 mi', type: 'give' },
+                { id: 4, name: 'Baby Formula', amount: '1 can', user: 'David K.', distance: '1.1 mi', type: 'need' },
+                { id: 5, name: 'Rice & Pasta', amount: '5 lbs total', user: 'Ana R.', distance: '1.3 mi', type: 'give' },
+                { id: 6, name: 'Fresh Bread', amount: '2 loaves', user: 'Tom B.', distance: '0.4 mi', type: 'give' }
+            ]);
+
+            const [showForm, setShowForm] = useState(false);
+            const [newItem, setNewItem] = useState({ name: '', amount: '', type: 'give' });
+
+            const handleSubmit = () => {
+                if (newItem.name && newItem.amount) {
+                    setItems([{ ...newItem, id: Date.now(), user: 'You', distance: 'Nearby' }, ...items]);
+                    setNewItem({ name: '', amount: '', type: 'give' });
+                    setShowForm(false);
+                }
+            };
+
+            return (
+                <section className="section" id="exchange">
+                    <div className="section-header">
+                        <h2>Community <span style={{color: 'var(--primary)'}}>Exchange</span></h2>
+                        <p>Share surplus food with neighbors or request what you need. Together we fight hunger.</p>
+                    </div>
+                    <div className="exchange-container">
+                        <div className="exchange-form">
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showForm ? '1.5rem' : 0}}>
+                                <h3 style={{fontSize: '1.125rem'}}>Available Items</h3>
+                                <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+                                    {showForm ? 'Cancel' : '+ Add Item'}
+                                </button>
+                            </div>
+
+                            {showForm && (
+                                <div style={{marginBottom: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: '12px'}}>
+                                    <div className="form-group">
+                                        <label>Item Name</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="e.g., Fresh Vegetables"
+                                            value={newItem.name}
+                                            onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Amount</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="e.g., 2 lbs, 6 cans"
+                                            value={newItem.amount}
+                                            onChange={(e) => setNewItem({...newItem, amount: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Type</label>
+                                        <div className="radio-group">
+                                            <div className={`radio-option ${newItem.type === 'give' ? 'selected' : ''}`} onClick={() => setNewItem({...newItem, type: 'give'})}>
+                                                I Have to Give
+                                            </div>
+                                            <div className={`radio-option ${newItem.type === 'need' ? 'selected' : ''}`} onClick={() => setNewItem({...newItem, type: 'need'})}>
+                                                I Need
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button className="btn btn-primary" onClick={handleSubmit} style={{marginTop: '1rem'}}>
+                                        Post to Community
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="exchange-grid">
+                            {items.map(item => (
+                                <div className="exchange-item" key={item.id}>
+                                    <div className="exchange-item-info">
+                                        <div className="exchange-avatar" style={{background: item.type === 'give' ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'linear-gradient(135deg, var(--danger), var(--accent))'}}>
+                                            {item.user.charAt(0)}
+                                        </div>
+                                        <div className="exchange-details">
+                                            <h4>{item.name}</h4>
+                                            <p>{item.amount} • {item.type === 'give' ? 'Offering' : 'Requesting'}</p>
+                                            <div className="exchange-distance">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                                </svg>
+                                                {item.distance}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button className="contact-btn" style={{background: item.type === 'give' ? 'var(--primary)' : 'var(--secondary)'}}>
+                                        {item.type === 'give' ? 'Claim' : 'Offer'}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        function Footer() {
+            return (
+                <footer>
+                    <Logo />
+                    <p style={{marginTop: '1rem'}}>NutriAI - Fuel the Future Hackathon 2026</p>
+                    <p style={{fontSize: '0.875rem'}}>Combating malnutrition through AI-powered solutions</p>
+                    <p style={{marginTop: '1rem', fontSize: '0.75rem', opacity: 0.6}}>Built with care for communities in need</p>
+                </footer>
+            );
+        }
+
+        function App() {
+            return (
+                <div className="app-container">
+                    <Navbar />
+                    <Hero />
+                    <Features />
+                    <Assessment />
+                    <Resources />
+                    <Meals />
+                    <Exchange />
+                    <Footer />
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
