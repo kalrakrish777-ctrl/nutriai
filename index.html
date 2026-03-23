@@ -9,8 +9,6 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --primary: #10b981;
@@ -479,81 +477,6 @@
             color: var(--primary);
         }
 
-        .map-container {
-            background: var(--bg-glass);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            overflow: hidden;
-            height: 500px;
-            position: relative;
-        }
-
-        .map-placeholder {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-        }
-
-        .map-placeholder svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        .map-markers {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            right: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            z-index: 10;
-        }
-
-        .map-marker {
-            padding: 0.5rem 1rem;
-            background: var(--bg-glass);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
-        }
-
-        .map-marker:hover,
-        .map-marker.active {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .map-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-            padding: 1.5rem;
-        }
-
-        .location-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.25rem;
-            display: flex;
-            gap: 1rem;
-            transition: all 0.3s;
-        }
-
-        .location-card:hover {
-            border-color: var(--primary);
-            transform: translateX(4px);
-        }
-
         .location-icon {
             width: 48px;
             height: 48px;
@@ -562,26 +485,6 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-        }
-
-        .location-icon.bank { background: rgba(16, 185, 129, 0.2); color: var(--primary); }
-        .location-icon.market { background: rgba(245, 158, 11, 0.2); color: var(--secondary); }
-        .location-icon.kitchen { background: rgba(139, 92, 246, 0.2); color: var(--accent); }
-
-        .location-info h4 {
-            font-size: 1rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .location-info p {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .location-distance {
-            font-size: 0.75rem;
-            color: var(--primary);
-            margin-top: 0.25rem;
         }
 
         .meals-container {
@@ -1037,69 +940,6 @@
             color: var(--text-secondary);
         }
 
-        .map-wrapper {
-            height: 400px;
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
-
-        #map {
-            height: 100%;
-            width: 100%;
-        }
-
-        .location-permission {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 300px;
-            text-align: center;
-        }
-
-        .location-permission svg {
-            width: 64px;
-            height: 64px;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-        }
-
-        .meal-card {
-            cursor: pointer;
-        }
-
-        .meal-card .view-recipe {
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            background: var(--primary);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-        }
-
-        .meal-card .view-recipe:hover {
-            background: var(--primary-dark);
-        }
-
-        .leaflet-popup-content-wrapper {
-            background: var(--bg-dark);
-            color: white;
-            border-radius: 12px;
-        }
-
-        .leaflet-popup-tip {
-            background: var(--bg-dark);
-        }
-
-        .leaflet-popup-content {
-            margin: 12px;
-        }
-
         .search-no-results {
             text-align: center;
             padding: 3rem;
@@ -1207,7 +1047,7 @@
             const tabs = [
                 { id: 'dashboard', label: 'Dashboard', icon: 'home' },
                 { id: 'assessment', label: 'Assessment', icon: 'assessment' },
-                { id: 'resources', label: 'Resources', icon: 'map' },
+                { id: 'ai', label: 'AI Assistant', icon: 'ai' },
                 { id: 'meals', label: 'Recipes', icon: 'meals' },
                 { id: 'education', label: 'Education', icon: 'book' }
             ];
@@ -1215,7 +1055,7 @@
             const icons = {
                 home: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
                 assessment: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
-                map: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+                ai: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
                 meals: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>,
                 book: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             };
@@ -1608,325 +1448,303 @@
             );
         }
 
-        function Resources() {
-            const [activeFilter, setActiveFilter] = useState('all');
-            const [showAll, setShowAll] = useState(false);
-            const [userLocation, setUserLocation] = useState(null);
-            const [loading, setLoading] = useState(true);
-            const [locations, setLocations] = useState([]);
-            const [searchQuery, setSearchQuery] = useState('');
-            const mapRef = useRef(null);
-            const markersRef = useRef([]);
+        function AIAssistant() {
+            const [messages, setMessages] = useState([
+                { role: 'assistant', content: "Hello! I'm NutriAI, your nutrition assistant. Ask me anything about malnutrition, healthy eating, vitamins, meal planning, or food safety. How can I help you today?" }
+            ]);
+            const [input, setInput] = useState('');
+            const [loading, setLoading] = useState(false);
+            const messagesEndRef = useRef(null);
+
+            const scrollToBottom = () => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            };
 
             useEffect(() => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            setUserLocation({
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude
-                            });
-                        },
-                        (err) => {
-                            setUserLocation({ lat: 40.7128, lng: -74.0060 });
-                            setLoading(false);
+                scrollToBottom();
+            }, [messages]);
+
+            const knowledgeBase = {
+                malnutrition: {
+                    keywords: ['malnutrition', 'malnourish', 'underweight', 'nutrient deficiency', 'starving', 'hunger'],
+                    response: "Malnutrition occurs when the body doesn't get enough nutrients. Signs include:\n\n• Unexplained weight loss\n• Feeling tired all the time\n• Getting sick often\n• Slow wound healing\n• Difficulty concentrating\n\nRisk factors: poverty, food deserts, chronic illness, elderly, children. If you suspect malnutrition, please consult a healthcare provider and consider visiting a local food bank or nutrition program."
+                },
+                protein: {
+                    keywords: ['protein', 'meat', 'amino acids', 'muscle', 'chicken', 'beef', 'fish', 'eggs', 'beans'],
+                    response: "Protein is essential for muscle growth, repair, and overall health. Great affordable sources:\n\n• Eggs - One of the cheapest complete proteins\n• Beans and lentils - High in protein and fiber\n• Canned fish (tuna, sardines)\n• Chicken thighs - Cheaper than breasts\n• Greek yogurt\n• Peanut butter\n\nAdults need about 50g of protein daily. Combine beans with rice for a complete protein!"
+                },
+                vitamins: {
+                    keywords: ['vitamin', 'vitamins', 'deficiency', 'supplement', 'mineral'],
+                    response: "Essential vitamins and where to find them:\n\n• Vitamin A (eyes, immunity): Carrots, sweet potatoes, spinach, eggs\n• Vitamin C (immunity): Citrus fruits, bell peppers, broccoli\n• Vitamin D (bones): Sunlight, fortified milk, fatty fish\n• B Vitamins (energy): Whole grains, leafy greens, beans\n• Iron (blood): Red meat, beans, spinach, fortified cereals\n• Calcium (bones): Dairy, leafy greens, fortified foods\n\nMost vitamins are best obtained through a varied diet. Supplements should be used under medical guidance."
+                },
+                budget: {
+                    keywords: ['budget', 'cheap', 'affordable', 'save money', ' inexpensive', 'cost', 'price', 'grocery'],
+                    response: "Eating healthy on a budget is possible!\n\nTips to save money:\n• Plan meals around weekly sales\n• Buy seasonal produce\n• Use frozen vegetables (cheaper, lasts longer)\n• Buy store brands (same nutrition)\n• Cook at home instead of eating out\n• Rice and beans = complete protein, very cheap\n• Buy whole chickens instead of parts\n• Make a shopping list and stick to it\n\nBatch cooking and meal prep on weekends can save time and money during the week."
+                },
+                recipes: {
+                    keywords: ['recipe', 'cook', 'meal', 'dinner', 'lunch', 'breakfast', 'food', 'dish'],
+                    response: "Great question! Check out our Recipes tab for 50+ healthy, budget-friendly recipes.\n\nQuick meal ideas:\n• Scrambled eggs with toast\n• Rice and beans with vegetables\n• Peanut butter banana sandwich\n• Canned soup with added vegetables\n• Pasta with tomato sauce and frozen veggies\n\nNeed a specific type of recipe? Search in the Recipes tab by ingredient or cuisine type!"
+                },
+                foodSafety: {
+                    keywords: ['safety', 'safe', 'spoiled', 'expired', 'contamination', 'bacteria', 'food poisoning'],
+                    response: "Food safety is crucial to prevent illness:\n\nStorage rules:\n• Refrigerate within 2 hours\n• Keep fridge below 40°F (4°C)\n• Store raw meat separately\n• Check expiration dates\n\nWhen cooking:\n• Wash hands before cooking\n• Cook to proper temperatures\n• Use separate cutting boards\n\nWhen in doubt, throw it out! Don't risk food poisoning."
+                },
+                children: {
+                    keywords: ['child', 'children', 'kids', 'baby', 'toddler', 'feeding', 'school'],
+                    response: "Healthy eating for children:\n\nTips to help kids eat well:\n• Make food fun (cut into shapes)\n• Involve kids in cooking\n• Offer vegetables first when hungry\n• Model healthy eating yourself\n• Don't force, just offer\n\nHealthy snacks for kids:\n• Apple slices with peanut butter\n• Carrot sticks with hummus\n• Cheese and whole grain crackers\n• Frozen grapes\n• String cheese\n\nChildren need balanced nutrition for growth and development. Consult a pediatrician for specific dietary needs."
+                },
+                foodDesert: {
+                    keywords: ['desert', 'access', 'no food', 'far', 'transport', 'grocery store'],
+                    response: "Food deserts are areas with limited access to affordable, nutritious food. If you're in a food desert:\n\n• Visit local food banks or pantries\n• Check for community gardens\n• Look into mobile produce trucks\n• Use food assistance programs (SNAP, WIC)\n• Connect with local churches or community centers\n• Consider growing your own vegetables\n• Find farmers markets that accept SNAP\n\nMany communities have resources to help. Don't hesitate to reach out for support."
+                },
+                water: {
+                    keywords: ['water', 'hydration', 'drink', 'dehydration', 'thirst'],
+                    response: "Staying hydrated is essential for health:\n\n• Adults should drink 8 glasses of water daily\n• More if you're active or it's hot\n• Water helps digestion, circulation, and temperature control\n\nSigns of dehydration:\n• Dark urine\n• Fatigue\n• Headache\n• Dry skin\n• Dizziness\n\nIf clean water is hard to access, look into:\n• Community water filtration programs\n• Water banks\n• Public water fountains\n• Filtered water options"
+                },
+                elderly: {
+                    keywords: ['elderly', 'senior', 'older', 'aging', 'grandparent'],
+                    response: "Older adults have unique nutritional needs:\n\nCommon concerns:\n• Decreased appetite\n• Difficulty chewing\n• Medication interactions\n• Reduced nutrient absorption\n\nTips for seniors:\n• Eat smaller, more frequent meals\n• Choose soft, easy-to-chew foods\n• Fortified foods can help\n• Stay social during meals\n• Consider meal delivery programs\n\nMany communities offer senior nutrition programs. Contact local aging services for support."
+                },
+                pregnancy: {
+                    keywords: ['pregnant', 'pregnancy', 'expecting', 'baby', 'nursing', 'breastfeeding'],
+                    response: "Nutrition during pregnancy is crucial:\n\nKey nutrients:\n• Folic acid (leafy greens, fortified grains)\n• Iron (meat, beans, spinach)\n• Calcium (dairy, fortified foods)\n• Omega-3s (fish, walnuts)\n\nTips:\n• Eat small, frequent meals\n• Stay hydrated\n• Avoid raw fish and unpasteurized foods\n• Take prenatal vitamins as recommended\n\nContact a healthcare provider for personalized guidance during pregnancy."
+                },
+                shopping: {
+                    keywords: ['shop', 'grocery', 'store', 'market', 'buy', 'shopping list'],
+                    response: "Smart grocery shopping tips:\n\nBefore you go:\n• Make a list and stick to it\n• Check what you already have\n• Plan meals around sales\n\nAt the store:\n• Shop the perimeter (fresh foods)\n• Compare unit prices\n• Choose seasonal produce\n• Buy store brands\n\nHealthy picks on a budget:\n• Beans and lentils\n• Eggs\n• Frozen vegetables\n• Oats and whole grains\n• Bananas and apples\n• Canned tomatoes"
+                },
+                symptoms: {
+                    keywords: ['symptom', 'signs', 'feeling', 'tired', 'weak', 'dizzy', 'hair loss', 'skin'],
+                    response: "Common signs of nutritional deficiency:\n\n• Fatigue - Could indicate iron, B12, or vitamin D deficiency\n• Hair loss - May signal protein or iron deficiency\n• Brittle nails - Can mean lack of calcium or biotin\n• Slow healing - May indicate zinc or vitamin C deficiency\n• Frequent illness - Can signal weak immune system from poor nutrition\n• Skin problems - May relate to vitamin A or E deficiency\n\nIf you're experiencing these symptoms, please consult a healthcare provider for proper diagnosis and treatment."
+                },
+                default: {
+                    keywords: [],
+                    response: "I'm here to help with questions about nutrition, healthy eating, malnutrition, meal planning, food safety, and more. Try asking about:\n\n• Protein sources and meal ideas\n• Vitamins and minerals\n• Eating on a budget\n• Food safety\n• Child nutrition\n• Senior nutrition\n• Signs of malnutrition\n• How to access food assistance\n\nWhat would you like to know more about?"
+                }
+            };
+
+            const findResponse = (query) => {
+                const lowerQuery = query.toLowerCase();
+                
+                for (const [topic, data] of Object.entries(knowledgeBase)) {
+                    for (const keyword of data.keywords) {
+                        if (lowerQuery.includes(keyword)) {
+                            return data.response;
                         }
-                    );
-                } else {
-                    setUserLocation({ lat: 40.7128, lng: -74.0060 });
-                    setLoading(false);
-                }
-            }, []);
-
-            useEffect(() => {
-                if (userLocation && mapRef.current) {
-                    initMap();
-                }
-            }, [userLocation]);
-
-            const initMap = () => {
-                const checkL = setInterval(() => {
-                    if (typeof L !== 'undefined') {
-                        clearInterval(checkL);
-                        createMap();
                     }
-                }, 100);
-            };
-
-            const createMap = () => {
-                if (mapRef.current && !mapRef.current._leaflet_id) {
-                    const map = L.map(mapRef.current, {
-                        center: [userLocation.lat, userLocation.lng],
-                        zoom: 13,
-                        zoomControl: true,
-                        scrollWheelZoom: true
-                    });
-                    
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(map);
-
-                    const userIcon = L.divIcon({
-                        className: 'custom-marker',
-                        html: '<div style="background: #10b981; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4);"></div>',
-                        iconSize: [20, 20],
-                        iconAnchor: [10, 10]
-                    });
-
-                    L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
-                        .addTo(map)
-                        .bindPopup('<b>Your Location</b>');
-                    
-                    fetchRealLocations(map);
                 }
-            };
-
-            const fetchRealLocations = async (map) => {
-                const { lat, lng } = userLocation;
-                const radius = 10000;
                 
-                const overpassQuery = `
-                    [out:json][timeout:30];
-                    (
-                        node["amenity"="food_bank"](around:${radius},${lat},${lng});
-                        node["shop"="supermarket"](around:${radius},${lat},${lng});
-                        node["shop"="convenience"](around:${radius},${lat},${lng});
-                        node["amenity"="restaurant"](around:${radius},${lat},${lng});
-                        node["amenity"="fast_food"](around:${radius},${lat},${lng});
-                        way["amenity"="food_bank"](around:${radius},${lat},${lng});
-                        way["shop"="supermarket"](around:${radius},${lat},${lng});
-                        way["shop"="convenience"](around:${radius},${lat},${lng});
-                    );
-                    out center 50;
-                `;
-
-                try {
-                    const response = await fetch('https://overpass-api.de/api/interpreter', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: `data=${encodeURIComponent(overpassQuery)}`
-                    });
-                    
-                    if (!response.ok) throw new Error('API error');
-                    
-                    const data = await response.json();
-                    
-                    if (data.elements && data.elements.length > 0) {
-                        const processedLocations = data.elements.map((el) => {
-                            const center = el.center || { lat: el.lat, lon: el.lon };
-                            const tags = el.tags || {};
-                            const name = tags.name || tags.shop || tags.amenity || 'Local Resource';
-                            
-                            let type = 'bank';
-                            if (tags.shop === 'supermarket' || tags.shop === 'convenience' || tags.shop === 'farm') {
-                                type = 'market';
-                            } else if (tags.amenity === 'restaurant' || tags.amenity === 'fast_food') {
-                                type = 'kitchen';
-                            }
-
-                            return {
-                                id: el.id,
-                                name: name,
-                                type: type,
-                                lat: center.lat,
-                                lng: center.lon,
-                                address: tags['addr:street'] ? `${tags['addr:housenumber'] || ''} ${tags['addr:street']}` : '',
-                                hours: tags.opening_hours || '',
-                                phone: tags.phone || ''
-                            };
-                        });
-
-                        setLocations(processedLocations);
-                        updateMarkersOnMap(processedLocations, map);
-                    } else {
-                        setLocations([]);
-                    }
-                } catch (error) {
-                    console.error('Error fetching locations:', error);
-                } finally {
-                    setLoading(false);
+                if (lowerQuery.includes('?') || lowerQuery.includes('help') || lowerQuery.includes('how') || lowerQuery.includes('what') || lowerQuery.includes('why') || lowerQuery.includes('can')) {
+                    return knowledgeBase.default.response;
                 }
-            };
-
-            const updateMarkersOnMap = (locs, map) => {
-                if (!map) return;
                 
-                markersRef.current.forEach(marker => {
-                    if (map.hasLayer(marker)) {
-                        map.removeLayer(marker);
-                    }
-                });
-                markersRef.current = [];
-
-                const filtered = locs.filter(l => activeFilter === 'all' || l.type === activeFilter);
-
-                const icons = {
-                    bank: L.divIcon({
-                        className: 'custom-marker',
-                        html: '<div style="background: #10b981; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold;">F</div>',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    }),
-                    market: L.divIcon({
-                        className: 'custom-marker',
-                        html: '<div style="background: #f59e0b; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold;">M</div>',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    }),
-                    kitchen: L.divIcon({
-                        className: 'custom-marker',
-                        html: '<div style="background: #8b5cf6; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold;">R</div>',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    })
-                };
-
-                filtered.forEach(loc => {
-                    const marker = L.marker([loc.lat, loc.lng], { icon: icons[loc.type] })
-                        .addTo(map)
-                        .bindPopup(`<b>${loc.name}</b><br/>${loc.address || 'Address unavailable'}`);
-                    markersRef.current.push(marker);
-                });
+                return knowledgeBase.default.response;
             };
 
-            const getDistance = (lat1, lon1, lat2, lon2) => {
-                const R = 3959;
-                const dLat = (lat2 - lat1) * Math.PI / 180;
-                const dLon = (lon2 - lon1) * Math.PI / 180;
-                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                    Math.sin(dLon/2) * Math.sin(dLon/2);
-                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                return (R * c).toFixed(1);
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!input.trim()) return;
+
+                const userMessage = { role: 'user', content: input };
+                setMessages(prev => [...prev, userMessage]);
+                setInput('');
+                setLoading(true);
+
+                setTimeout(() => {
+                    const response = findResponse(input);
+                    setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+                    setLoading(false);
+                }, 500 + Math.random() * 500);
             };
 
-            const filteredLocations = locations.filter(l => {
-                const matchesFilter = activeFilter === 'all' || l.type === activeFilter;
-                const matchesSearch = !searchQuery || 
-                    l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    (l.address && l.address.toLowerCase().includes(searchQuery.toLowerCase()));
-                return matchesFilter && matchesSearch;
-            });
-
-            const displayedLocations = showAll ? filteredLocations : filteredLocations.slice(0, 12);
+            const suggestedQuestions = [
+                "What are signs of malnutrition?",
+                "How can I eat healthy on a budget?",
+                "What protein sources are affordable?",
+                "How much water should I drink daily?",
+                "What vitamins do I need?"
+            ];
 
             return (
-                <section className="section" id="resources">
+                <section className="section" id="ai">
                     <div className="section-header">
-                        <h2>Food <span style={{color: 'var(--primary)'}}>Resources</span></h2>
-                        <p>Find real food banks, markets, and community kitchens near you using OpenStreetMap data</p>
-                    </div>
-                    
-                    <div className="map-container">
-                        <div style={{padding: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center'}}>
-                            <div className="map-markers" style={{position: 'static'}}>
-                                {[
-                                    { key: 'all', label: 'All' },
-                                    { key: 'bank', label: 'Food Banks' },
-                                    { key: 'market', label: 'Markets' },
-                                    { key: 'kitchen', label: 'Kitchens' }
-                                ].map(filter => (
-                                    <div 
-                                        key={filter.key}
-                                        className={`map-marker ${activeFilter === filter.key ? 'active' : ''}`}
-                                        onClick={() => setActiveFilter(filter.key)}
-                                    >
-                                        {filter.label}
-                                    </div>
-                                ))}
-                            </div>
-                            <input 
-                                type="text" 
-                                placeholder="Search locations..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                style={{
-                                    padding: '0.5rem 1rem',
-                                    background: 'var(--bg-card)',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: '20px',
-                                    color: 'white',
-                                    fontSize: '0.875rem',
-                                    outline: 'none',
-                                    minWidth: '200px',
-                                    marginLeft: 'auto'
-                                }}
-                            />
-                        </div>
-                        {loading ? (
-                            <div className="location-permission">
-                                <div className="spinner"></div>
-                                <p style={{marginTop: '1rem'}}>Finding nearby food resources...</p>
-                                <p style={{fontSize: '0.8rem', marginTop: '0.5rem'}}>Using your location to search OpenStreetMap</p>
-                            </div>
-                        ) : (
-                            <div className="map-wrapper">
-                                <div id="map" ref={mapRef}></div>
-                            </div>
-                        )}
+                        <h2>AI Nutrition <span style={{color: 'var(--primary)'}}>Assistant</span></h2>
+                        <p>Ask questions about nutrition, health, and food - get instant answers</p>
                     </div>
 
-                    <div style={{marginTop: '2rem'}}>
-                        <p style={{textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '1rem'}}>
-                            Found {filteredLocations.length} locations near you
-                        </p>
-                        <div className="map-grid">
-                            {displayedLocations.map((location, i) => (
-                                <div className="location-card" key={location.id || i}>
-                                    <div className={`location-icon ${location.type}`}>
-                                        {location.type === 'bank' && (
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                                                <path d="M9 22V12h6v10"/>
-                                            </svg>
-                                        )}
-                                        {location.type === 'market' && (
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                                                <path d="M3 6h18"/>
-                                                <path d="M16 10a4 4 0 0 1-8 0"/>
-                                            </svg>
-                                        )}
-                                        {location.type === 'kitchen' && (
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
-                                                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-                                                <path d="M6 1v3"/>
-                                                <path d="M10 1v3"/>
-                                                <path d="M14 1v3"/>
-                                            </svg>
-                                        )}
-                                    </div>
-                                    <div className="location-info">
-                                        <h4>{location.name}</h4>
-                                        <p>{location.address || 'Address not available'}</p>
-                                        {location.hours && <p>Hours: {location.hours}</p>}
-                                        {location.phone && <p>Phone: {location.phone}</p>}
-                                        <div className="location-distance">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                                            </svg>
-                                            {userLocation ? `${getDistance(userLocation.lat, userLocation.lng, location.lat, location.lng)} mi away` : `${((location.lat + location.lng) * 1000).toFixed(0)} units`}
+                    <div style={{maxWidth: '800px', margin: '0 auto'}}>
+                        <div style={{
+                            background: 'var(--bg-glass)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '24px',
+                            height: '500px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{
+                                flex: 1,
+                                overflowY: 'auto',
+                                padding: '1.5rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1rem'
+                            }}>
+                                {messages.map((msg, i) => (
+                                    <div 
+                                        key={i}
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start'
+                                        }}
+                                    >
+                                        <div style={{
+                                            maxWidth: '80%',
+                                            padding: '1rem 1.25rem',
+                                            borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                                            background: msg.role === 'user' 
+                                                ? 'linear-gradient(135deg, var(--primary), var(--primary-dark))' 
+                                                : 'var(--bg-card)',
+                                            color: 'white',
+                                            fontSize: '0.95rem',
+                                            lineHeight: '1.6',
+                                            whiteSpace: 'pre-wrap'
+                                        }}>
+                                            {msg.role === 'assistant' && (
+                                                <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)">
+                                                        <circle cx="12" cy="12" r="10"/>
+                                                        <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="white" fill="none" strokeWidth="2"/>
+                                                        <circle cx="9" cy="9" r="1" fill="white"/>
+                                                        <circle cx="15" cy="9" r="1" fill="white"/>
+                                                    </svg>
+                                                    <span style={{fontWeight: 600, color: 'var(--primary)'}}>NutriAI</span>
+                                                </div>
+                                            )}
+                                            {msg.content}
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                        {filteredLocations.length > 12 && (
-                            <div style={{textAlign: 'center', marginTop: '1.5rem'}}>
-                                <button className="btn btn-secondary" onClick={() => setShowAll(!showAll)}>
-                                    {showAll ? 'Show Less' : `Show All (${filteredLocations.length} locations)`}
-                                </button>
+                                ))}
+                                {loading && (
+                                    <div style={{display: 'flex', justifyContent: 'flex-start'}}>
+                                        <div style={{
+                                            padding: '1rem 1.25rem',
+                                            borderRadius: '18px 18px 18px 4px',
+                                            background: 'var(--bg-card)',
+                                            color: 'var(--text-secondary)'
+                                        }}>
+                                            <div style={{display: 'flex', gap: '4px'}}>
+                                                <div style={{
+                                                    width: '8px', height: '8px', borderRadius: '50%',
+                                                    background: 'var(--primary)',
+                                                    animation: 'bounce 1.4s infinite ease-in-out'
+                                                }}></div>
+                                                <div style={{
+                                                    width: '8px', height: '8px', borderRadius: '50%',
+                                                    background: 'var(--primary)',
+                                                    animation: 'bounce 1.4s infinite ease-in-out 0.2s'
+                                                }}></div>
+                                                <div style={{
+                                                    width: '8px', height: '8px', borderRadius: '50%',
+                                                    background: 'var(--primary)',
+                                                    animation: 'bounce 1.4s infinite ease-in-out 0.4s'
+                                                }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} />
                             </div>
-                        )}
-                        {!loading && locations.length === 0 && (
-                            <p style={{textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem'}}>
-                                No food resources found in your area. Try zooming out or moving to a different location.
-                            </p>
-                        )}
+
+                            {messages.length === 1 && (
+                                <div style={{padding: '0 1rem 1rem'}}>
+                                    <p style={{fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.75rem'}}>Quick questions:</p>
+                                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.5rem'}}>
+                                        {suggestedQuestions.map((q, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setInput(q)}
+                                                style={{
+                                                    padding: '0.5rem 1rem',
+                                                    background: 'var(--bg-card)',
+                                                    border: '1px solid var(--border)',
+                                                    borderRadius: '20px',
+                                                    color: 'var(--text-secondary)',
+                                                    fontSize: '0.85rem',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.3s'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.target.style.borderColor = 'var(--primary)';
+                                                    e.target.style.color = 'var(--primary)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.target.style.borderColor = 'var(--border)';
+                                                    e.target.style.color = 'var(--text-secondary)';
+                                                }}
+                                            >
+                                                {q}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <form onSubmit={handleSubmit} style={{
+                                padding: '1rem 1.5rem',
+                                borderTop: '1px solid var(--border)',
+                                display: 'flex',
+                                gap: '0.75rem'
+                            }}>
+                                <input
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    placeholder="Ask about nutrition, health, food..."
+                                    style={{
+                                        flex: 1,
+                                        padding: '0.875rem 1.25rem',
+                                        background: 'var(--bg-card)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '12px',
+                                        color: 'white',
+                                        fontSize: '1rem',
+                                        outline: 'none'
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                                    onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+                                />
+                                <button 
+                                    type="submit" 
+                                    disabled={!input.trim() || loading}
+                                    style={{
+                                        padding: '0.875rem 1.5rem',
+                                        background: input.trim() ? 'var(--primary)' : 'var(--bg-card)',
+                                        border: 'none',
+                                        borderRadius: '12px',
+                                        color: input.trim() ? 'white' : 'var(--text-secondary)',
+                                        cursor: input.trim() ? 'pointer' : 'not-allowed',
+                                        transition: 'all 0.3s',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M22 2L11 13"/>
+                                        <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     </div>
+
+                    <style>{`
+                        @keyframes bounce {
+                            0%, 80%, 100% { transform: translateY(0); }
+                            40% { transform: translateY(-6px); }
+                        }
+                    `}</style>
                 </section>
             );
         }
@@ -3187,8 +3005,8 @@ Getting kids to eat vegetables:
                         return <Dashboard setActiveTab={setActiveTab} />;
                     case 'assessment':
                         return <Assessment />;
-                    case 'resources':
-                        return <Resources />;
+                    case 'ai':
+                        return <AIAssistant />;
                     case 'meals':
                         return <Meals />;
                     case 'education':
@@ -3210,20 +3028,20 @@ Getting kids to eat vegetables:
         function Dashboard({ setActiveTab }) {
             const stats = [
                 { value: '800M+', label: 'People Affected', color: 'var(--danger)' },
-                { value: '50+', label: 'Resources Nearby', color: 'var(--primary)' },
+                { value: '50+', label: 'Recipes', color: 'var(--primary)' },
                 { value: '95%', label: 'Accuracy', color: 'var(--secondary)' }
             ];
 
             const features = [
                 { icon: 'assessment', title: 'AI Risk Assessment', desc: 'Get personalized malnutrition risk evaluation', color: 'var(--primary)', tab: 'assessment' },
-                { icon: 'map', title: 'Food Resources', desc: 'Find food banks, markets near you', color: 'var(--secondary)', tab: 'resources' },
+                { icon: 'ai', title: 'AI Assistant', desc: 'Chat with AI about nutrition and health', color: 'var(--secondary)', tab: 'ai' },
                 { icon: 'meals', title: 'Recipes', desc: 'Search 50+ nutritious recipes', color: 'var(--accent)', tab: 'meals' },
                 { icon: 'book', title: 'Education', desc: 'Learn about nutrition and health', color: 'var(--primary)', tab: 'education' }
             ];
 
             const icons = {
                 assessment: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
-                map: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+                ai: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
                 meals: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>,
                 book: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             };
@@ -3246,8 +3064,8 @@ Getting kids to eat vegetables:
                                 </svg>
                                 Start Assessment
                             </button>
-                            <button className="btn btn-secondary" onClick={() => setActiveTab('resources')}>
-                                Find Resources
+                            <button className="btn btn-secondary" onClick={() => setActiveTab('ai')}>
+                                Chat with AI
                             </button>
                         </div>
                         <div className="stats">
