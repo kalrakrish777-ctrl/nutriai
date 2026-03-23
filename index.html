@@ -9,6 +9,8 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --primary: #10b981;
@@ -852,6 +854,217 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        .recipe-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .recipe-content {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .recipe-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .recipe-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .recipe-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .close-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .recipe-body {
+            padding: 2rem;
+        }
+
+        .recipe-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .recipe-section h3 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recipe-section ul {
+            list-style: none;
+        }
+
+        .recipe-section li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .recipe-section li:last-child {
+            border-bottom: none;
+        }
+
+        .recipe-section li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        .recipe-steps {
+            counter-reset: step;
+        }
+
+        .recipe-steps li {
+            padding-left: 2.5rem;
+        }
+
+        .recipe-steps li::before {
+            content: counter(step);
+            counter-increment: step;
+            position: absolute;
+            left: 0;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .recipe-meta-item {
+            background: var(--bg-card);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .recipe-meta-item .value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .recipe-meta-item .label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .map-wrapper {
+            height: 400px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .location-permission {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            text-align: center;
+        }
+
+        .location-permission svg {
+            width: 64px;
+            height: 64px;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .meal-card {
+            cursor: pointer;
+        }
+
+        .meal-card .view-recipe {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .meal-card .view-recipe:hover {
+            background: var(--primary-dark);
+        }
     </style>
 </head>
 <body>
@@ -1308,18 +1521,142 @@
         function Resources() {
             const [activeFilter, setActiveFilter] = useState('all');
             const [showAll, setShowAll] = useState(false);
+            const [userLocation, setUserLocation] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const mapRef = useRef(null);
+            const mapInstanceRef = useRef(null);
 
-            const locations = [
-                { type: 'bank', name: 'Community Food Bank', address: '123 Hope Street', distance: '0.3 mi', hours: 'Mon-Sat 9am-5pm' },
-                { type: 'market', name: 'Fresh Farmers Market', address: '456 Green Ave', distance: '0.8 mi', hours: 'Tue, Thu, Sat 7am-2pm' },
-                { type: 'kitchen', name: 'St. Mary\'s Soup Kitchen', address: '789 Charity Lane', distance: '1.2 mi', hours: 'Daily 11am-2pm' },
-                { type: 'bank', name: 'Westside Pantry', address: '321 Community Dr', distance: '1.5 mi', hours: 'Mon-Fri 10am-6pm' },
-                { type: 'market', name: 'Mobile Produce Truck', address: 'Rotating Locations', distance: 'Various', hours: 'Check schedule' },
-                { type: 'kitchen', name: 'New Beginnings Cafe', address: '555 Support Blvd', distance: '2.0 mi', hours: 'Mon-Wed-Fri 5pm-8pm' },
-                { type: 'bank', name: 'Youth Nutrition Center', address: '888 Future Way', distance: '2.3 mi', hours: 'After school hours' },
-                { type: 'market', name: 'Community Garden', address: 'Parkside Community Center', distance: '0.5 mi', hours: 'Dawn to Dusk' }
+            const baseLocations = [
+                { type: 'bank', name: 'Community Food Bank', lat: 40.7128, lng: -74.0060, hours: 'Mon-Sat 9am-5pm', phone: '(555) 123-4567' },
+                { type: 'market', name: 'Fresh Farmers Market', lat: 40.7148, lng: -74.0080, hours: 'Tue, Thu, Sat 7am-2pm', phone: '(555) 234-5678' },
+                { type: 'kitchen', name: "St. Mary's Soup Kitchen", lat: 40.7108, lng: -74.0040, hours: 'Daily 11am-2pm', phone: '(555) 345-6789' },
+                { type: 'bank', name: 'Westside Pantry', lat: 40.7168, lng: -74.0100, hours: 'Mon-Fri 10am-6pm', phone: '(555) 456-7890' },
+                { type: 'market', name: 'Mobile Produce Truck', lat: 40.7138, lng: -74.0070, hours: 'Check schedule', phone: '(555) 567-8901' },
+                { type: 'kitchen', name: 'New Beginnings Cafe', lat: 40.7098, lng: -74.0020, hours: 'Mon-Wed-Fri 5pm-8pm', phone: '(555) 678-9012' },
+                { type: 'bank', name: 'Youth Nutrition Center', lat: 40.7188, lng: -74.0120, hours: 'After school hours', phone: '(555) 789-0123' },
+                { type: 'market', name: 'Community Garden', lat: 40.7118, lng: -74.0050, hours: 'Dawn to Dusk', phone: '(555) 890-1234' }
             ];
 
+            const getAdjustedLocations = () => {
+                if (!userLocation) return baseLocations;
+                return baseLocations.map(loc => {
+                    const latOffset = (Math.random() - 0.5) * 0.02;
+                    const lngOffset = (Math.random() - 0.5) * 0.02;
+                    return {
+                        ...loc,
+                        lat: loc.lat + latOffset,
+                        lng: loc.lng + lngOffset
+                    };
+                });
+            };
+
+            useEffect(() => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            setUserLocation({
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            });
+                            setLoading(false);
+                        },
+                        (err) => {
+                            console.log('Geolocation error, using default:', err);
+                            setUserLocation({ lat: 40.7128, lng: -74.0060 });
+                            setError('Using demo location. Enable location for accurate results.');
+                            setLoading(false);
+                        }
+                    );
+                } else {
+                    setUserLocation({ lat: 40.7128, lng: -74.0060 });
+                    setLoading(false);
+                }
+            }, []);
+
+            useEffect(() => {
+                if (userLocation && mapRef.current && !mapInstanceRef.current) {
+                    mapInstanceRef.current = L.map('map').setView([userLocation.lat, userLocation.lng], 14);
+                    
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                    }).addTo(mapInstanceRef.current);
+
+                    const userIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="background: #10b981; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+
+                    L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+                        .addTo(mapInstanceRef.current)
+                        .bindPopup('<b>Your Location</b>');
+
+                    updateMarkers();
+                } else if (userLocation && mapInstanceRef.current) {
+                    updateMarkers();
+                }
+            }, [userLocation, activeFilter]);
+
+            const updateMarkers = () => {
+                if (!mapInstanceRef.current) return;
+                
+                mapInstanceRef.current.eachLayer((layer) => {
+                    if (layer instanceof L.Marker && !layer.getPopup()?.getContent()?.includes('Your Location')) {
+                        mapInstanceRef.current.removeLayer(layer);
+                    }
+                });
+
+                const locations = getAdjustedLocations();
+                const filtered = activeFilter === 'all' ? locations : locations.filter(l => l.type === activeFilter);
+
+                const icons = {
+                    bank: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="background: #10b981; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">🏠</div>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    }),
+                    market: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="background: #f59e0b; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">🛒</div>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    }),
+                    kitchen: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="background: #8b5cf6; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">🍲</div>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    })
+                };
+
+                filtered.forEach(loc => {
+                    L.marker([loc.lat, loc.lng], { icon: icons[loc.type] })
+                        .addTo(mapInstanceRef.current)
+                        .bindPopup(`
+                            <div style="min-width: 150px;">
+                                <strong style="font-size: 14px;">${loc.name}</strong><br/>
+                                <span style="color: #666; font-size: 12px;">${loc.hours}</span><br/>
+                                <span style="color: #666; font-size: 12px;">${loc.phone}</span>
+                            </div>
+                        `);
+                });
+            };
+
+            const getDistance = (lat1, lon1, lat2, lon2) => {
+                const R = 3959;
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLon = (lon2 - lon1) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return (R * c).toFixed(1);
+            };
+
+            const locations = getAdjustedLocations();
             const filteredLocations = activeFilter === 'all' 
                 ? locations 
                 : locations.filter(l => l.type === activeFilter);
@@ -1350,14 +1687,21 @@
                                 </div>
                             ))}
                         </div>
-                        <div className="map-placeholder">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                <circle cx="12" cy="10" r="3"/>
-                            </svg>
-                            <p>Interactive Map</p>
-                            <p style={{fontSize: '0.8rem'}}>Showing resources near your location</p>
-                        </div>
+                        {loading ? (
+                            <div className="location-permission">
+                                <div className="spinner"></div>
+                                <p style={{marginTop: '1rem'}}>Getting your location...</p>
+                            </div>
+                        ) : (
+                            <div className="map-wrapper">
+                                <div id="map" ref={mapRef}></div>
+                            </div>
+                        )}
+                        {error && (
+                            <p style={{textAlign: 'center', color: 'var(--secondary)', padding: '0.5rem', fontSize: '0.85rem'}}>
+                                {error}
+                            </p>
+                        )}
                     </div>
 
                     <div style={{marginTop: '2rem'}}>
@@ -1390,13 +1734,13 @@
                                     </div>
                                     <div className="location-info">
                                         <h4>{location.name}</h4>
-                                        <p>{location.address}</p>
                                         <p>{location.hours}</p>
+                                        <p>{location.phone}</p>
                                         <div className="location-distance">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                                                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                                             </svg>
-                                            {location.distance}
+                                            {userLocation ? `${getDistance(userLocation.lat, userLocation.lng, location.lat, location.lng)} mi` : location.lat.toFixed(2) + ', ' + location.lng.toFixed(2)}
                                         </div>
                                     </div>
                                 </div>
@@ -1415,59 +1759,218 @@
         }
 
         function Meals() {
+            const [selectedRecipe, setSelectedRecipe] = useState(null);
+            const [dietFilter, setDietFilter] = useState('all');
+
             const meals = [
                 {
                     name: 'Protein-Packed Lentil Stew',
-                    description: 'Hearty and filling lentil stew with carrots, celery, and warming spices. High in protein and fiber.',
-                    tags: ['protein', 'budget', 'vitamins'],
-                    macros: { protein: '18g', carbs: '45g', fiber: '12g' },
-                    color: '#10b981'
+                    description: 'Hearty and filling lentil stew with carrots, celery, and warming spices.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '18g', carbs: '45g', fiber: '12g', calories: 380, time: '45 min', servings: 4 },
+                    color: '#10b981',
+                    ingredients: [
+                        '1 cup dried lentils, rinsed',
+                        '2 carrots, diced',
+                        '2 celery stalks, chopped',
+                        '1 onion, diced',
+                        '3 cloves garlic, minced',
+                        '1 can diced tomatoes',
+                        '4 cups vegetable broth',
+                        '1 tsp cumin',
+                        '1 tsp turmeric',
+                        'Salt and pepper to taste',
+                        '2 tbsp olive oil'
+                    ],
+                    instructions: [
+                        'Heat olive oil in a large pot over medium heat.',
+                        'Add onion and cook until softened, about 5 minutes.',
+                        'Add garlic, carrots, and celery. Cook for 3 minutes.',
+                        'Add cumin and turmeric, stir for 1 minute until fragrant.',
+                        'Add lentils, tomatoes, and vegetable broth.',
+                        'Bring to a boil, then reduce heat and simmer for 30-35 minutes until lentils are tender.',
+                        'Season with salt and pepper to taste.',
+                        'Serve hot with crusty bread or over rice.'
+                    ],
+                    tips: 'Add spinach or kale in the last 5 minutes for extra nutrients. Soup freezes well for up to 3 months.'
                 },
                 {
                     name: 'Rainbow Rice Bowl',
-                    description: 'Colorful bowl with brown rice, roasted vegetables, and tahini dressing. Packed with vitamins A, C, and K.',
+                    description: 'Colorful bowl with brown rice, roasted vegetables, and tahini dressing.',
                     tags: ['vitamins', 'budget'],
-                    macros: { protein: '12g', carbs: '62g', fiber: '8g' },
-                    color: '#f59e0b'
+                    macros: { protein: '12g', carbs: '62g', fiber: '8g', calories: 420, time: '35 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: [
+                        '1 cup brown rice',
+                        '1 sweet potato, cubed',
+                        '1 cup chickpeas, drained',
+                        '1 red bell pepper, sliced',
+                        '1 cup purple cabbage, shredded',
+                        '1 avocado, sliced',
+                        '2 tbsp tahini',
+                        '1 tbsp lemon juice',
+                        '1 clove garlic, minced',
+                        '2 tbsp olive oil',
+                        'Salt, pepper, and paprika'
+                    ],
+                    instructions: [
+                        'Cook brown rice according to package directions.',
+                        'Preheat oven to 400°F (200°C).',
+                        'Toss sweet potato and chickpeas with 1 tbsp olive oil, salt, pepper, and paprika.',
+                        'Spread on baking sheet and roast for 25 minutes until golden.',
+                        'Mix tahini, lemon juice, garlic, and 2 tbsp water for dressing.',
+                        'Sauté bell pepper and cabbage in remaining olive oil until slightly tender.',
+                        'Assemble bowls with rice, roasted vegetables, fresh vegetables, and avocado.',
+                        'Drizzle with tahini dressing and serve.'
+                    ],
+                    tips: 'Meal prep friendly - store components separately and assemble fresh each day.'
                 },
                 {
-                    name: 'Egg Fried Rice',
-                    description: 'Quick and nutritious fried rice with eggs, peas, carrots, and minimal oil. Perfect for using leftover rice.',
+                    name: 'Quick Egg Fried Rice',
+                    description: 'Quick and nutritious fried rice with eggs, peas, carrots, and minimal oil.',
                     tags: ['protein', 'budget'],
-                    macros: { protein: '14g', carbs: '55g', fiber: '4g' },
-                    color: '#8b5cf6'
+                    macros: { protein: '14g', carbs: '55g', fiber: '4g', calories: 350, time: '15 min', servings: 2 },
+                    color: '#8b5cf6',
+                    ingredients: [
+                        '3 cups cold cooked rice',
+                        '3 eggs, beaten',
+                        '1 cup frozen peas and carrots',
+                        '3 green onions, sliced',
+                        '2 tbsp low-sodium soy sauce',
+                        '1 tbsp sesame oil',
+                        '1 tbsp vegetable oil',
+                        '2 cloves garlic, minced',
+                        'Black pepper to taste'
+                    ],
+                    instructions: [
+                        'Heat vegetable oil in a large wok or skillet over high heat.',
+                        'Add beaten eggs and scramble quickly, breaking into small pieces. Set aside.',
+                        'Add more oil if needed. Stir-fry garlic for 30 seconds.',
+                        'Add frozen vegetables and stir-fry for 2 minutes.',
+                        'Add cold rice, breaking up any clumps. Stir-fry for 3-4 minutes.',
+                        'Add soy sauce and sesame oil, toss to combine.',
+                        'Return eggs to the wok and mix evenly.',
+                        'Garnish with green onions and black pepper.'
+                    ],
+                    tips: 'Use day-old refrigerated rice for best texture. Fresh rice becomes too mushy.'
                 },
                 {
                     name: 'Bean & Veggie Tacos',
-                    description: 'Black bean and vegetable tacos with fresh salsa and avocado. High in protein and healthy fats.',
+                    description: 'Black bean and vegetable tacos with fresh salsa and avocado.',
                     tags: ['protein', 'vitamins'],
-                    macros: { protein: '15g', carbs: '48g', fiber: '14g' },
-                    color: '#ef4444'
+                    macros: { protein: '15g', carbs: '48g', fiber: '14g', calories: 390, time: '20 min', servings: 3 },
+                    color: '#ef4444',
+                    ingredients: [
+                        '1 can black beans, drained',
+                        '1 cup corn kernels',
+                        '1 red onion, diced',
+                        '1 jalapeño, minced',
+                        '2 Roma tomatoes, diced',
+                        '6 small corn tortillas',
+                        '1 avocado',
+                        '1 lime',
+                        '1/2 cup fresh cilantro',
+                        '1 tsp cumin',
+                        'Salt to taste'
+                    ],
+                    instructions: [
+                        'Make salsa: combine tomatoes, half the onion, jalapeño, and cilantro. Add lime juice and salt.',
+                        'Mash avocado with remaining lime juice and a pinch of salt for guacamole.',
+                        'Heat a skillet over medium heat. Add beans, corn, cumin, and remaining onion.',
+                        'Cook and mash beans slightly, about 5 minutes.',
+                        'Warm tortillas in a dry skillet or directly over gas flame.',
+                        'Assemble tacos with bean mixture, salsa, and guacamole.',
+                        'Serve immediately with extra cilantro on top.'
+                    ],
+                    tips: 'Add grilled chicken or seasoned tofu for extra protein. Char the tortillas for smoky flavor.'
                 },
                 {
                     name: 'Oatmeal Power Bowl',
-                    description: 'Steel-cut oats with bananas, nuts, and honey. Sustained energy with complex carbs and protein.',
+                    description: 'Steel-cut oats with bananas, nuts, and honey for sustained energy.',
                     tags: ['protein', 'budget'],
-                    macros: { protein: '10g', carbs: '65g', fiber: '7g' },
-                    color: '#06b6d4'
+                    macros: { protein: '10g', carbs: '65g', fiber: '7g', calories: 320, time: '15 min', servings: 1 },
+                    color: '#06b6d4',
+                    ingredients: [
+                        '1/2 cup steel-cut oats',
+                        '1 cup water or milk',
+                        '1 banana, sliced',
+                        '2 tbsp mixed nuts (almonds, walnuts)',
+                        '1 tbsp honey or maple syrup',
+                        '1/2 tsp cinnamon',
+                        'Pinch of salt'
+                    ],
+                    instructions: [
+                        'Bring water or milk to a boil in a small pot.',
+                        'Add steel-cut oats and reduce heat to low.',
+                        'Simmer for 10-12 minutes, stirring occasionally.',
+                        'Add cinnamon and salt, cook for 2 more minutes.',
+                        'Transfer to a bowl and top with banana slices.',
+                        'Add nuts and drizzle with honey.',
+                        'Serve warm and enjoy!'
+                    ],
+                    tips: 'Add chia seeds or flaxseed for omega-3s. Use overnight soaked oats for faster morning prep.'
                 },
                 {
                     name: 'Mediterranean Salad',
-                    description: 'Fresh cucumber, tomato, olives, and feta cheese with olive oil dressing. Rich in healthy fats.',
+                    description: 'Fresh cucumber, tomato, olives, and feta with olive oil dressing.',
                     tags: ['vitamins'],
-                    macros: { protein: '8g', carbs: '20g', fiber: '6g' },
-                    color: '#84cc16'
+                    macros: { protein: '8g', carbs: '20g', fiber: '6g', calories: 280, time: '10 min', servings: 2 },
+                    color: '#84cc16',
+                    ingredients: [
+                        '1 large cucumber, diced',
+                        '2 cups cherry tomatoes, halved',
+                        '1/2 cup kalamata olives',
+                        '1/2 cup crumbled feta cheese',
+                        '1/4 red onion, thinly sliced',
+                        '3 tbsp extra virgin olive oil',
+                        '1 tbsp red wine vinegar',
+                        '1 tsp dried oregano',
+                        'Fresh parsley',
+                        'Salt and pepper'
+                    ],
+                    instructions: [
+                        'Combine cucumber, tomatoes, olives, onion, and parsley in a large bowl.',
+                        'In a small jar, add olive oil, red wine vinegar, oregano, salt, and pepper.',
+                        'Shake well until emulsified.',
+                        'Pour dressing over salad and toss gently.',
+                        'Top with crumbled feta cheese.',
+                        'Serve immediately or refrigerate for 30 minutes to let flavors meld.'
+                    ],
+                    tips: 'Add grilled chicken or chickpeas to make it a complete meal. Pairs well with pita bread.'
                 }
             ];
+
+            const filteredMeals = dietFilter === 'all' 
+                ? meals 
+                : meals.filter(m => m.tags.includes(dietFilter));
 
             return (
                 <section className="section" id="meals">
                     <div className="section-header">
                         <h2>Smart <span style={{color: 'var(--primary)'}}>Meal Plans</span></h2>
-                        <p>Nutritious, budget-friendly meals tailored to your available ingredients and nutritional needs</p>
+                        <p>Nutritious, budget-friendly recipes with full ingredients and instructions</p>
                     </div>
+                    
+                    <div style={{display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap'}}>
+                        {[
+                            { key: 'all', label: 'All Recipes' },
+                            { key: 'protein', label: 'High Protein' },
+                            { key: 'budget', label: 'Budget Friendly' },
+                            { key: 'vitamins', label: 'Vitamin Rich' }
+                        ].map(filter => (
+                            <div 
+                                key={filter.key}
+                                className={`radio-option ${dietFilter === filter.key ? 'selected' : ''}`}
+                                onClick={() => setDietFilter(filter.key)}
+                                style={{cursor: 'pointer'}}
+                            >
+                                {filter.label}
+                            </div>
+                        ))}
+                    </div>
+
                     <div className="meals-container">
-                        {meals.map((meal, i) => (
+                        {filteredMeals.map((meal, i) => (
                             <div className="meal-card" key={i}>
                                 <div className="meal-image" style={{background: `linear-gradient(135deg, ${meal.color}, ${meal.color}88)`}}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
@@ -1498,10 +2001,86 @@
                                             <div className="macro-label">Fiber</div>
                                         </div>
                                     </div>
+                                    <button className="view-recipe" onClick={() => setSelectedRecipe(meal)}>
+                                        View Full Recipe
+                                    </button>
                                 </div>
                             </div>
                         ))}
                     </div>
+
+                    {selectedRecipe && (
+                        <div className="recipe-modal" onClick={() => setSelectedRecipe(null)}>
+                            <div className="recipe-content" onClick={e => e.stopPropagation()}>
+                                <div className="recipe-header">
+                                    <div>
+                                        <h2 style={{color: selectedRecipe.color}}>{selectedRecipe.name}</h2>
+                                        <p>{selectedRecipe.description}</p>
+                                    </div>
+                                    <button className="close-btn" onClick={() => setSelectedRecipe(null)}>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M18 6L6 18M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="recipe-body">
+                                    <div className="recipe-meta">
+                                        <div className="recipe-meta-item">
+                                            <div className="value">{selectedRecipe.macros.calories}</div>
+                                            <div className="label">Calories</div>
+                                        </div>
+                                        <div className="recipe-meta-item">
+                                            <div className="value">{selectedRecipe.macros.time}</div>
+                                            <div className="label">Cook Time</div>
+                                        </div>
+                                        <div className="recipe-meta-item">
+                                            <div className="value">{selectedRecipe.macros.servings}</div>
+                                            <div className="label">Servings</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="recipe-section">
+                                        <h3>
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                                                <rect x="9" y="3" width="6" height="4" rx="2"/>
+                                            </svg>
+                                            Ingredients
+                                        </h3>
+                                        <ul>
+                                            {selectedRecipe.ingredients.map((ing, i) => (
+                                                <li key={i}>{ing}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    <div className="recipe-section">
+                                        <h3>
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
+                                                <path d="M20 12a8 8 0 0 0-8-8v8h8z"/>
+                                            </svg>
+                                            Instructions
+                                        </h3>
+                                        <ul className="recipe-steps">
+                                            {selectedRecipe.instructions.map((step, i) => (
+                                                <li key={i}>{step}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    {selectedRecipe.tips && (
+                                        <div className="recommendations">
+                                            <h4>Chef's Tips</h4>
+                                            <ul>
+                                                <li>{selectedRecipe.tips}</li>
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </section>
             );
         }
