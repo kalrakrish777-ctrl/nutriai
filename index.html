@@ -1197,7 +1197,7 @@
                         <li><a href="#assessment" onClick={(e) => { e.preventDefault(); scrollTo('assessment'); }}>Assessment</a></li>
                         <li><a href="#resources" onClick={(e) => { e.preventDefault(); scrollTo('resources'); }}>Resources</a></li>
                         <li><a href="#meals" onClick={(e) => { e.preventDefault(); scrollTo('meals'); }}>Meals</a></li>
-                        <li><a href="#exchange" onClick={(e) => { e.preventDefault(); scrollTo('exchange'); }}>Exchange</a></li>
+                        <li><a href="#education" onClick={(e) => { e.preventDefault(); scrollTo('education'); }}>Education</a></li>
                     </ul>
                 </nav>
             );
@@ -1266,8 +1266,8 @@
                 {
                     icon: 'users',
                     color: 'green',
-                    title: 'Community Exchange',
-                    description: 'Connect with neighbors to share surplus food and ingredients. Build a community network that fights food waste and hunger together.'
+                    title: 'Nutrition Education',
+                    description: 'Learn about healthy eating, meal planning on a budget, essential vitamins, and food safety. Empower yourself with knowledge to fight malnutrition.'
                 }
             ];
 
@@ -1275,7 +1275,7 @@
                 brain: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a8 8 0 0 0-8 8c0 3.5 2 6.5 5 8v4h6v-4c3-1.5 5-4.5 5-8a8 8 0 0 0-8-8z"/><path d="M12 2v4m-4 4h8"/></svg>,
                 map: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
                 utensils: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>,
-                users: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                users: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             };
 
             return (
@@ -1553,9 +1553,7 @@
             const [locations, setLocations] = useState([]);
             const [searchQuery, setSearchQuery] = useState('');
             const mapRef = useRef(null);
-            const mapInstanceRef = useRef(null);
             const markersRef = useRef([]);
-            const initializedRef = useRef(false);
 
             useEffect(() => {
                 if (navigator.geolocation) {
@@ -1568,63 +1566,59 @@
                         },
                         (err) => {
                             setUserLocation({ lat: 40.7128, lng: -74.0060 });
+                            setLoading(false);
                         }
                     );
                 } else {
                     setUserLocation({ lat: 40.7128, lng: -74.0060 });
+                    setLoading(false);
                 }
             }, []);
 
             useEffect(() => {
-                if (userLocation && !initializedRef.current) {
-                    initializedRef.current = true;
+                if (userLocation && mapRef.current) {
                     initMap();
                 }
             }, [userLocation]);
 
             const initMap = () => {
-                if (typeof window.L === 'undefined') {
-                    setTimeout(initMap, 500);
-                    return;
-                }
-                
-                const L = window.L;
-                const mapElement = document.getElementById('map');
-                if (!mapElement || mapInstanceRef.current) return;
-
-                const map = L.map('map', {
-                    center: [userLocation.lat, userLocation.lng],
-                    zoom: 13,
-                    zoomControl: true,
-                    scrollWheelZoom: true
-                });
-                
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(map);
-
-                const userIcon = L.divIcon({
-                    className: 'custom-marker',
-                    html: '<div style="background: #10b981; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>',
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                });
-
-                L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
-                    .addTo(map)
-                    .bindPopup('<b>Your Location</b>');
-                
-                mapInstanceRef.current = map;
-                setTimeout(fetchRealLocations, 1000);
+                const checkL = setInterval(() => {
+                    if (typeof L !== 'undefined') {
+                        clearInterval(checkL);
+                        createMap();
+                    }
+                }, 100);
             };
 
-            useEffect(() => {
-                if (mapInstanceRef.current) {
-                    mapInstanceRef.current.on('load', fetchRealLocations);
-                }
-            }, [userLocation]);
+            const createMap = () => {
+                if (mapRef.current && !mapRef.current._leaflet_id) {
+                    const map = L.map(mapRef.current, {
+                        center: [userLocation.lat, userLocation.lng],
+                        zoom: 13,
+                        zoomControl: true,
+                        scrollWheelZoom: true
+                    });
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
 
-            const fetchRealLocations = async () => {
+                    const userIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="background: #10b981; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4);"></div>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+
+                    L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+                        .addTo(map)
+                        .bindPopup('<b>Your Location</b>');
+                    
+                    fetchRealLocations(map);
+                }
+            };
+
+            const fetchRealLocations = async (map) => {
                 const { lat, lng } = userLocation;
                 const radius = 10000;
                 
@@ -1682,7 +1676,7 @@
                         });
 
                         setLocations(processedLocations);
-                        updateMarkersOnMap(processedLocations);
+                        updateMarkersOnMap(processedLocations, map);
                     } else {
                         setLocations([]);
                     }
@@ -1693,12 +1687,12 @@
                 }
             };
 
-            const updateMarkersOnMap = (locs) => {
-                if (!mapInstanceRef.current) return;
+            const updateMarkersOnMap = (locs, map) => {
+                if (!map) return;
                 
                 markersRef.current.forEach(marker => {
-                    if (mapInstanceRef.current.hasLayer(marker)) {
-                        mapInstanceRef.current.removeLayer(marker);
+                    if (map.hasLayer(marker)) {
+                        map.removeLayer(marker);
                     }
                 });
                 markersRef.current = [];
@@ -1728,7 +1722,7 @@
 
                 filtered.forEach(loc => {
                     const marker = L.marker([loc.lat, loc.lng], { icon: icons[loc.type] })
-                        .addTo(mapInstanceRef.current)
+                        .addTo(map)
                         .bindPopup(`<b>${loc.name}</b><br/>${loc.address || 'Address unavailable'}`);
                     markersRef.current.push(marker);
                 });
@@ -2866,105 +2860,246 @@
             );
         }
 
-        function Exchange() {
-            const [items, setItems] = useState([
-                { id: 1, name: 'Fresh Tomatoes', amount: '2 lbs', user: 'Maria G.', distance: '0.2 mi', type: 'give' },
-                { id: 2, name: 'Canned Beans', amount: '6 cans', user: 'James L.', distance: '0.5 mi', type: 'need' },
-                { id: 3, name: 'Garden Zucchini', amount: '4 pieces', user: 'Sarah M.', distance: '0.8 mi', type: 'give' },
-                { id: 4, name: 'Baby Formula', amount: '1 can', user: 'David K.', distance: '1.1 mi', type: 'need' },
-                { id: 5, name: 'Rice & Pasta', amount: '5 lbs total', user: 'Ana R.', distance: '1.3 mi', type: 'give' },
-                { id: 6, name: 'Fresh Bread', amount: '2 loaves', user: 'Tom B.', distance: '0.4 mi', type: 'give' }
-            ]);
+        function NutritionEducation() {
+            const [activeCategory, setActiveCategory] = useState('all');
+            const [selectedArticle, setSelectedArticle] = useState(null);
 
-            const [showForm, setShowForm] = useState(false);
-            const [newItem, setNewItem] = useState({ name: '', amount: '', type: 'give' });
+            const articles = [
+                {
+                    id: 1,
+                    title: 'Understanding Malnutrition',
+                    category: 'basics',
+                    readTime: '5 min',
+                    color: '#10b981',
+                    summary: 'Learn the signs and symptoms of malnutrition and who is most at risk.',
+                    content: `Malnutrition occurs when the body doesn't get enough nutrients. It can result from:
+• Inadequate food intake
+• Poor absorption of nutrients
+• Certain medical conditions
 
-            const handleSubmit = () => {
-                if (newItem.name && newItem.amount) {
-                    setItems([{ ...newItem, id: Date.now(), user: 'You', distance: 'Nearby' }, ...items]);
-                    setNewItem({ name: '', amount: '', type: 'give' });
-                    setShowForm(false);
+Signs of malnutrition include:
+• Unexplained weight loss
+• Feeling tired and fatigued
+• Getting sick more often
+• Slow wound healing
+• Difficulty concentrating
+
+Those most at risk include:
+• Low-income families
+• Elderly individuals
+• Children under 5
+• Pregnant and breastfeeding women
+• People with chronic illnesses`
+                },
+                {
+                    id: 2,
+                    title: 'Affordable Protein Sources',
+                    category: 'protein',
+                    readTime: '4 min',
+                    color: '#f59e0b',
+                    summary: 'Discover budget-friendly ways to get enough protein in your diet.',
+                    content: `Protein is essential for muscle growth and repair. Great affordable sources:
+
+• Eggs - One of the cheapest complete proteins
+• Beans and lentils - High in protein and fiber
+• Canned fish - Tuna and sardines are affordable
+• Chicken thighs - Cheaper than breasts, just as nutritious
+• Greek yogurt - Great protein for the price
+• Peanut butter - Budget-friendly and protein-rich
+
+Tips for stretching protein:
+• Buy in bulk when possible
+• Use beans as a meat extender
+• Make eggs a breakfast staple
+• Plan meals around weekly sales`
+                },
+                {
+                    id: 3,
+                    title: 'Vitamins: What You Need',
+                    category: 'vitamins',
+                    readTime: '6 min',
+                    color: '#8b5cf6',
+                    summary: 'Essential vitamins and where to find them without breaking the bank.',
+                    content: `Key vitamins everyone needs:
+
+Vitamin A (eyes, immune system)
+• Carrots, sweet potatoes, spinach
+• Eggs, milk
+
+Vitamin C (immune, skin)
+• Citrus fruits
+• Bell peppers, broccoli
+
+Vitamin D (bones, mood)
+• Sunlight exposure
+• Fortified milk, fatty fish
+
+B Vitamins (energy, nerves)
+• Whole grains
+• Leafy greens, beans
+
+Iron (blood, oxygen)
+• Red meat, beans
+• Spinach, fortified cereals
+
+Most vitamins can be obtained through a varied diet without supplements.`
+                },
+                {
+                    id: 4,
+                    title: 'Meal Planning on a Budget',
+                    category: 'budget',
+                    readTime: '5 min',
+                    color: '#ef4444',
+                    summary: 'Practical tips for planning nutritious meals without spending much.',
+                    content: `Meal planning saves money and reduces food waste:
+
+1. Check what you have first
+2. Plan meals around sale items
+3. Buy seasonal produce
+4. Batch cook staples like rice and beans
+5. Use leftovers creatively
+6. Make a shopping list and stick to it
+
+Budget meal tips:
+• Rice and beans = complete protein
+• Frozen vegetables = cheaper and last longer
+• Generic brands = same nutrition, lower price
+• Buy whole chickens instead of parts
+• Cook at home instead of eating out`
+                },
+                {
+                    id: 5,
+                    title: 'Food Safety Basics',
+                    category: 'safety',
+                    readTime: '4 min',
+                    color: '#06b6d4',
+                    summary: 'Keep your food safe and prevent foodborne illness.',
+                    content: `Prevent foodborne illness with these practices:
+
+Storage:
+• Refrigerate within 2 hours
+• Keep fridge below 40°F
+• Store raw meat separately
+• Check expiration dates
+
+Preparation:
+• Wash hands before cooking
+• Cook to proper temperatures
+• Use separate cutting boards
+• Don't defrost at room temperature
+
+When in doubt:
+• If it smells bad, throw it out
+• When in doubt, throw it out
+• Reheat to 165°F minimum
+• Cool food before refrigerating`
+                },
+                {
+                    id: 6,
+                    title: 'Healthy Eating for Kids',
+                    category: 'kids',
+                    readTime: '5 min',
+                    color: '#84cc16',
+                    summary: 'Help children develop healthy eating habits early.',
+                    content: `Kids need balanced nutrition for growth:
+
+Make food fun:
+• Cut into shapes
+• Make colorful plates
+• Involve kids in cooking
+• Let them choose recipes
+
+Healthy snack ideas:
+• Apple slices with peanut butter
+• Carrot sticks with hummus
+• Cheese and whole grain crackers
+• Frozen grapes
+• String cheese
+
+Getting kids to eat vegetables:
+• Offer them first when hungry
+• Model eating vegetables yourself
+• Don't force, just offer
+• Try different preparations
+• Hide veggies in sauces and smoothies`
                 }
-            };
+            ];
+
+            const categories = [
+                { key: 'all', label: 'All Topics' },
+                { key: 'basics', label: 'Basics' },
+                { key: 'protein', label: 'Protein' },
+                { key: 'budget', label: 'Budget' },
+                { key: 'vitamins', label: 'Vitamins' }
+            ];
+
+            const filteredArticles = activeCategory === 'all' 
+                ? articles 
+                : articles.filter(a => a.category === activeCategory);
 
             return (
-                <section className="section" id="exchange">
+                <section className="section" id="education">
                     <div className="section-header">
-                        <h2>Community <span style={{color: 'var(--primary)'}}>Exchange</span></h2>
-                        <p>Share surplus food with neighbors or request what you need. Together we fight hunger.</p>
+                        <h2>Nutrition <span style={{color: 'var(--primary)'}}>Education</span></h2>
+                        <p>Learn about nutrition, meal planning, and healthy eating on any budget</p>
                     </div>
-                    <div className="exchange-container">
-                        <div className="exchange-form">
-                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showForm ? '1.5rem' : 0}}>
-                                <h3 style={{fontSize: '1.125rem'}}>Available Items</h3>
-                                <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-                                    {showForm ? 'Cancel' : '+ Add Item'}
-                                </button>
+                    
+                    <div style={{display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap'}}>
+                        {categories.map(cat => (
+                            <div 
+                                key={cat.key}
+                                className={`radio-option ${activeCategory === cat.key ? 'selected' : ''}`}
+                                onClick={() => setActiveCategory(cat.key)}
+                                style={{cursor: 'pointer'}}
+                            >
+                                {cat.label}
                             </div>
-
-                            {showForm && (
-                                <div style={{marginBottom: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: '12px'}}>
-                                    <div className="form-group">
-                                        <label>Item Name</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="e.g., Fresh Vegetables"
-                                            value={newItem.name}
-                                            onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Amount</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="e.g., 2 lbs, 6 cans"
-                                            value={newItem.amount}
-                                            onChange={(e) => setNewItem({...newItem, amount: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Type</label>
-                                        <div className="radio-group">
-                                            <div className={`radio-option ${newItem.type === 'give' ? 'selected' : ''}`} onClick={() => setNewItem({...newItem, type: 'give'})}>
-                                                I Have to Give
-                                            </div>
-                                            <div className={`radio-option ${newItem.type === 'need' ? 'selected' : ''}`} onClick={() => setNewItem({...newItem, type: 'need'})}>
-                                                I Need
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button className="btn btn-primary" onClick={handleSubmit} style={{marginTop: '1rem'}}>
-                                        Post to Community
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="exchange-grid">
-                            {items.map(item => (
-                                <div className="exchange-item" key={item.id}>
-                                    <div className="exchange-item-info">
-                                        <div className="exchange-avatar" style={{background: item.type === 'give' ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'linear-gradient(135deg, var(--danger), var(--accent))'}}>
-                                            {item.user.charAt(0)}
-                                        </div>
-                                        <div className="exchange-details">
-                                            <h4>{item.name}</h4>
-                                            <p>{item.amount} • {item.type === 'give' ? 'Offering' : 'Requesting'}</p>
-                                            <div className="exchange-distance">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                                                </svg>
-                                                {item.distance}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button className="contact-btn" style={{background: item.type === 'give' ? 'var(--primary)' : 'var(--secondary)'}}>
-                                        {item.type === 'give' ? 'Claim' : 'Offer'}
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
+                        ))}
                     </div>
+
+                    <div className="cards-grid">
+                        {filteredArticles.map(article => (
+                            <div 
+                                className="card" 
+                                key={article.id}
+                                onClick={() => setSelectedArticle(article)}
+                                style={{cursor: 'pointer'}}
+                            >
+                                <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem'}}>
+                                    <div style={{width: '12px', height: '12px', borderRadius: '50%', background: article.color}}></div>
+                                    <span style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>{article.readTime} read</span>
+                                </div>
+                                <h3>{article.title}</h3>
+                                <p>{article.summary}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {selectedArticle && (
+                        <div className="recipe-modal" onClick={() => setSelectedArticle(null)}>
+                            <div className="recipe-content" onClick={e => e.stopPropagation()}>
+                                <div className="recipe-header">
+                                    <div>
+                                        <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
+                                            <div style={{width: '12px', height: '12px', borderRadius: '50%', background: selectedArticle.color}}></div>
+                                            <span style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>{selectedArticle.readTime} read</span>
+                                        </div>
+                                        <h2 style={{color: selectedArticle.color}}>{selectedArticle.title}</h2>
+                                    </div>
+                                    <button className="close-btn" onClick={() => setSelectedArticle(null)}>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M18 6L6 18M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="recipe-body">
+                                    <div style={{whiteSpace: 'pre-line', lineHeight: '1.8', color: 'var(--text-secondary)'}}>
+                                        {selectedArticle.content}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </section>
             );
         }
@@ -2989,7 +3124,7 @@
                     <Assessment />
                     <Resources />
                     <Meals />
-                    <Exchange />
+                    <NutritionEducation />
                     <Footer />
                 </div>
             );
