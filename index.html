@@ -1109,12 +1109,6 @@
         function Hero() {
             return (
                 <section className="hero" id="home">
-                        <div className="hero-badge">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-                            </svg>
-                            AI-Powered Nutrition Platform
-                        </div>
                     <h1>AI-Powered <span>Nutrition</span> for Everyone</h1>
                     <p>Combating malnutrition through intelligent risk assessment, community resources, and personalized meal planning. Making healthy nutrition accessible to underserved communities.</p>
                     <div className="hero-buttons">
@@ -2921,7 +2915,7 @@
                                             <div className="macro-label">Fiber</div>
                                         </div>
                                     </div>
-                                    <button className="view-recipe" onClick={() => setSelectedRecipe(meal)}>
+                                    <button className="view-recipe" onClick={() => setSelectedRecipe(meal)} style={{fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600, fontSize: '0.9rem', padding: '0.75rem 1.25rem', background: 'var(--bg-glass)', border: '1px solid var(--primary)', borderRadius: '10px', color: 'var(--primary)', cursor: 'pointer', transition: 'all 0.3s'}} onMouseEnter={(e) => {e.target.style.background = 'var(--primary)'; e.target.style.color = 'white'}} onMouseLeave={(e) => {e.target.style.background = 'var(--bg-glass)'; e.target.style.color = 'var(--primary)'}}>
                                         View Full Recipe
                                     </button>
                                 </div>
@@ -3752,12 +3746,6 @@ Healthier alternatives:
             return (
                 <div style={{minHeight: '100vh'}}>
                     <section className="hero" id="home">
-                        <div className="hero-badge">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-                            </svg>
-                            AI-Powered Nutrition Platform
-                        </div>
                         <h1>AI-Powered <span>Nutrition</span> for Everyone</h1>
                         <p>Combating malnutrition through intelligent risk assessment, community resources, and personalized meal planning.</p>
                         <div className="hero-buttons">
