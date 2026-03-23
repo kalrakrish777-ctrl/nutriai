@@ -1552,6 +1552,7 @@
             const [loading, setLoading] = useState(true);
             const [locations, setLocations] = useState([]);
             const [searchQuery, setSearchQuery] = useState('');
+            const [mapLoaded, setMapLoaded] = useState(false);
             const mapRef = useRef(null);
             const mapInstanceRef = useRef(null);
             const markersRef = useRef([]);
@@ -1575,102 +1576,116 @@
             }, []);
 
             useEffect(() => {
-                if (userLocation) {
-                    fetchRealLocations();
+                if (userLocation && mapRef.current && typeof L !== 'undefined' && !mapInstanceRef.current) {
+                    setTimeout(() => {
+                        if (mapRef.current && !mapInstanceRef.current) {
+                            mapInstanceRef.current = L.map('map', {
+                                center: [userLocation.lat, userLocation.lng],
+                                zoom: 13,
+                                zoomControl: true,
+                                scrollWheelZoom: true
+                            });
+                            
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '&copy; OpenStreetMap contributors'
+                            }).addTo(mapInstanceRef.current);
+
+                            const userIcon = L.divIcon({
+                                className: 'custom-marker',
+                                html: '<div style="background: #10b981; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>',
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 12]
+                            });
+
+                            L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+                                .addTo(mapInstanceRef.current)
+                                .bindPopup('<b>Your Location</b><br/>Finding nearby resources...');
+                            
+                            setMapLoaded(true);
+                            fetchLocationsWithDelay();
+                        }
+                    }, 500);
                 }
             }, [userLocation]);
 
+            const fetchLocationsWithDelay = () => {
+                setTimeout(() => {
+                    fetchRealLocations();
+                }, 1000);
+            };
+
             const fetchRealLocations = async () => {
                 const { lat, lng } = userLocation;
-                const radius = 15000;
+                const radius = 10000;
                 
                 const overpassQuery = `
-                    [out:json][timeout:25];
+                    [out:json][timeout:30];
                     (
                         node["amenity"="food_bank"](around:${radius},${lat},${lng});
-                        node["amenity"="community_centre"]["community_centre"~"food|kitchen|meal|soup"](around:${radius},${lat},${lng});
-                        node["shop"="farm"](around:${radius},${lat},${lng});
                         node["shop"="supermarket"](around:${radius},${lat},${lng});
-                        node["amenity"="fast_food"](around:${radius},${lat},${lng});
+                        node["shop"="convenience"](around:${radius},${lat},${lng});
                         node["amenity"="restaurant"](around:${radius},${lat},${lng});
+                        node["amenity"="fast_food"](around:${radius},${lat},${lng});
                         way["amenity"="food_bank"](around:${radius},${lat},${lng});
                         way["shop"="supermarket"](around:${radius},${lat},${lng});
-                        way["shop"="farm"](around:${radius},${lat},${lng});
+                        way["shop"="convenience"](around:${radius},${lat},${lng});
                     );
-                    out center;
+                    out center 50;
                 `;
 
                 try {
                     const response = await fetch('https://overpass-api.de/api/interpreter', {
                         method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
                         body: `data=${encodeURIComponent(overpassQuery)}`
                     });
+                    
+                    if (!response.ok) throw new Error('API error');
+                    
                     const data = await response.json();
                     
-                    const processedLocations = data.elements.map((el, index) => {
-                        const center = el.center || { lat: el.lat, lon: el.lon };
-                        const tags = el.tags || {};
-                        const name = tags.name || tags.shop || tags.amenity || 'Unknown Location';
-                        
-                        let type = 'bank';
-                        if (tags.shop === 'farm' || tags.shop === 'supermarket') {
-                            type = 'market';
-                        } else if (tags.amenity === 'fast_food' || tags.amenity === 'restaurant' || tags.amenity?.includes('kitchen') || tags.amenity?.includes('soup')) {
-                            type = 'kitchen';
-                        } else if (tags.amenity === 'food_bank' || name.toLowerCase().includes('food bank') || name.toLowerCase().includes('pantry') || name.toLowerCase().includes('food pantry')) {
-                            type = 'bank';
-                        }
+                    if (data.elements && data.elements.length > 0) {
+                        const processedLocations = data.elements.map((el) => {
+                            const center = el.center || { lat: el.lat, lon: el.lon };
+                            const tags = el.tags || {};
+                            const name = tags.name || tags.shop || tags.amenity || 'Local Resource';
+                            
+                            let type = 'bank';
+                            if (tags.shop === 'supermarket' || tags.shop === 'convenience' || tags.shop === 'farm') {
+                                type = 'market';
+                            } else if (tags.amenity === 'restaurant' || tags.amenity === 'fast_food') {
+                                type = 'kitchen';
+                            }
 
-                        return {
-                            id: el.id,
-                            name: name,
-                            type: type,
-                            lat: center.lat,
-                            lng: center.lon,
-                            address: tags['addr:street'] ? `${tags['addr:housenumber'] || ''} ${tags['addr:street']}` : '',
-                            hours: tags.opening_hours || tags['opening_hours:url'] || '',
-                            phone: tags.phone || tags['contact:phone'] || '',
-                            website: tags.website || ''
-                        };
-                    });
+                            return {
+                                id: el.id,
+                                name: name,
+                                type: type,
+                                lat: center.lat,
+                                lng: center.lon,
+                                address: tags['addr:street'] ? `${tags['addr:housenumber'] || ''} ${tags['addr:street']}` : '',
+                                hours: tags.opening_hours || '',
+                                phone: tags.phone || ''
+                            };
+                        });
 
-                    setLocations(processedLocations.slice(0, 50));
-                    setLoading(false);
+                        setLocations(processedLocations);
+                        updateMarkersOnMap(processedLocations);
+                    } else {
+                        setLocations([]);
+                    }
                 } catch (error) {
                     console.error('Error fetching locations:', error);
-                    setLocations([]);
+                } finally {
                     setLoading(false);
                 }
             };
 
-            useEffect(() => {
-                if (userLocation && mapRef.current && !mapInstanceRef.current) {
-                    mapInstanceRef.current = L.map('map').setView([userLocation.lat, userLocation.lng], 12);
-                    
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-                    }).addTo(mapInstanceRef.current);
-
-                    const userIcon = L.divIcon({
-                        className: 'custom-marker',
-                        html: '<div style="background: #10b981; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>',
-                        iconSize: [20, 20],
-                        iconAnchor: [10, 10]
-                    });
-
-                    L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
-                        .addTo(mapInstanceRef.current)
-                        .bindPopup('<b>Your Location</b>');
-                }
-            }, [userLocation]);
-
-            useEffect(() => {
-                if (mapInstanceRef.current && locations.length > 0) {
-                    updateMarkers();
-                }
-            }, [locations, activeFilter]);
-
-            const updateMarkers = () => {
+            const updateMarkersOnMap = (locs) => {
+                if (!mapInstanceRef.current) return;
+                
                 markersRef.current.forEach(marker => {
                     if (mapInstanceRef.current.hasLayer(marker)) {
                         mapInstanceRef.current.removeLayer(marker);
@@ -1678,46 +1693,35 @@
                 });
                 markersRef.current = [];
 
-                const filtered = locations.filter(l => activeFilter === 'all' || l.type === activeFilter);
+                const filtered = locs.filter(l => activeFilter === 'all' || l.type === activeFilter);
 
                 const icons = {
                     bank: L.divIcon({
                         className: 'custom-marker',
-                        html: '<div style="background: #10b981; width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18l6.9 3.45L12 11.09 5.1 7.63 12 4.18zM4 8.82l7 3.5v7.36l-7-3.5V8.82zm9 10.86v-7.36l7-3.5v7.36l-7 3.5z"/></svg></div>',
-                        iconSize: [28, 28],
-                        iconAnchor: [14, 14]
+                        html: '<div style="background: #10b981; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold;">F</div>',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
                     }),
                     market: L.divIcon({
                         className: 'custom-marker',
-                        html: '<div style="background: #f59e0b; width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg></div>',
-                        iconSize: [28, 28],
-                        iconAnchor: [14, 14]
+                        html: '<div style="background: #f59e0b; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold;">M</div>',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
                     }),
                     kitchen: L.divIcon({
                         className: 'custom-marker',
-                        html: '<div style="background: #8b5cf6; width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg></div>',
-                        iconSize: [28, 28],
-                        iconAnchor: [14, 14]
+                        html: '<div style="background: #8b5cf6; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold;">R</div>',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
                     })
                 };
 
                 filtered.forEach(loc => {
                     const marker = L.marker([loc.lat, loc.lng], { icon: icons[loc.type] })
                         .addTo(mapInstanceRef.current)
-                        .bindPopup(`
-                            <div style="min-width: 180px; padding: 4px;">
-                                <strong style="font-size: 13px; color: #333;">${loc.name}</strong><br/>
-                                <span style="font-size: 11px; color: #666;">${loc.address || 'Address not available'}</span><br/>
-                                ${loc.hours ? `<span style="font-size: 11px; color: #666;">Hours: ${loc.hours}</span><br/>` : ''}
-                                ${loc.phone ? `<span style="font-size: 11px; color: #666;">Phone: ${loc.phone}</span>` : ''}
-                            </div>
-                        `);
+                        .bindPopup(`<b>${loc.name}</b><br/>${loc.address || 'Address unavailable'}`);
                     markersRef.current.push(marker);
                 });
-
-                if (userLocation) {
-                    mapInstanceRef.current.setView([userLocation.lat, userLocation.lng], 12);
-                }
             };
 
             const getDistance = (lat1, lon1, lat2, lon2) => {
@@ -2040,6 +2044,556 @@
                         'Serve immediately or refrigerate for 30 minutes to let flavors meld.'
                     ],
                     tips: 'Add grilled chicken or chickpeas to make it a complete meal. Pairs well with pita bread.'
+                },
+                {
+                    name: 'Chicken Alfredo Pasta',
+                    description: 'Creamy alfredo pasta with tender chicken breast and parmesan.',
+                    tags: ['protein'],
+                    macros: { protein: '35g', carbs: '65g', fiber: '3g', calories: 520, time: '30 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['8oz fettuccine pasta', '2 chicken breasts', '2 cups heavy cream', '1 cup parmesan cheese', '4 cloves garlic', '2 tbsp butter', '1 tbsp olive oil', 'Salt and pepper', 'Fresh parsley'],
+                    instructions: ['Cook pasta according to package directions.', 'Season chicken with salt and pepper, cook in olive oil until golden.', 'Remove chicken and slice.', 'In same pan, melt butter and sauté garlic.', 'Add cream and simmer until thickened.', 'Stir in parmesan cheese.', 'Toss pasta with sauce and top with chicken.', 'Garnish with parsley.'],
+                    tips: 'Add spinach or broccoli for extra vegetables.'
+                },
+                {
+                    name: 'Vegetable Stir Fry',
+                    description: 'Quick and healthy stir fry with mixed vegetables and soy ginger sauce.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '8g', carbs: '32g', fiber: '6g', calories: 180, time: '15 min', servings: 2 },
+                    color: '#10b981',
+                    ingredients: ['2 cups mixed vegetables (broccoli, bell peppers, carrots)', '2 tbsp soy sauce', '1 tbsp sesame oil', '1 tsp fresh ginger', '2 cloves garlic', '1 tbsp vegetable oil'],
+                    instructions: ['Heat oil in wok over high heat.', 'Add ginger and garlic, stir for 30 seconds.', 'Add vegetables, stir fry for 3-4 minutes.', 'Add soy sauce and sesame oil.', 'Toss to coat and serve immediately.'],
+                    tips: 'Add tofu or shrimp for extra protein.'
+                },
+                {
+                    name: 'Grilled Cheese Sandwich',
+                    description: 'Classic crispy grilled cheese with melted cheddar cheese.',
+                    tags: ['budget'],
+                    macros: { protein: '12g', carbs: '28g', fiber: '2g', calories: 350, time: '10 min', servings: 1 },
+                    color: '#f59e0b',
+                    ingredients: ['2 slices bread', '2 slices cheddar cheese', '2 tbsp butter', 'Optional: tomato slices, bacon'],
+                    instructions: ['Butter one side of each bread slice.', 'Place cheese between unbuttered sides.', 'Cook in skillet over medium heat.', 'Flip when golden brown.', 'Cook until cheese melts.'],
+                    tips: 'Add tomato or bacon for extra flavor.'
+                },
+                {
+                    name: 'Banana Pancakes',
+                    description: 'Fluffy pancakes with ripe bananas, perfect for breakfast.',
+                    tags: ['budget'],
+                    macros: { protein: '8g', carbs: '45g', fiber: '3g', calories: 280, time: '20 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['1 ripe banana', '1 cup flour', '1 egg', '1 cup milk', '2 tbsp sugar', '1 tsp baking powder', '1 tbsp butter', 'Maple syrup for serving'],
+                    instructions: ['Mash banana in a bowl.', 'Mix flour, sugar, and baking powder.', 'Add egg and milk to banana, mix well.', 'Combine wet and dry ingredients.', 'Cook pancakes on griddle until golden.', 'Serve with maple syrup.'],
+                    tips: 'Add chocolate chips or blueberries for variety.'
+                },
+                {
+                    name: 'Spaghetti Bolognese',
+                    description: 'Classic Italian pasta with rich meat sauce.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '28g', carbs: '72g', fiber: '4g', calories: 480, time: '45 min', servings: 4 },
+                    color: '#ef4444',
+                    ingredients: ['1 lb ground beef', '1 lb spaghetti', '1 can crushed tomatoes', '1 onion', '3 cloves garlic', '2 carrots', '2 celery stalks', '1/2 cup red wine', 'Italian herbs', 'Parmesan cheese'],
+                    instructions: ['Brown ground beef in large pot.', 'Add onion, carrots, celery, and garlic. Cook until soft.', 'Pour in wine and simmer.', 'Add crushed tomatoes and herbs. Simmer 30 minutes.', 'Cook pasta according to package.', 'Serve sauce over pasta with parmesan.'],
+                    tips: 'Make extra sauce and freeze for quick meals.'
+                },
+                {
+                    name: 'Chicken Caesar Salad',
+                    description: 'Crisp romaine lettuce with grilled chicken and creamy caesar dressing.',
+                    tags: ['protein', 'vitamins'],
+                    macros: { protein: '32g', carbs: '12g', fiber: '4g', calories: 320, time: '25 min', servings: 2 },
+                    color: '#10b981',
+                    ingredients: ['2 chicken breasts', '1 romaine lettuce', '1/2 cup caesar dressing', '1/4 cup parmesan', '1 cup croutons', 'Lemon juice', 'Salt and pepper'],
+                    instructions: ['Season chicken and grill until cooked.', 'Let chicken rest, then slice.', 'Chop romaine lettuce.', 'Toss lettuce with dressing.', 'Top with chicken, croutons, and parmesan.', 'Squeeze lemon over salad.'],
+                    tips: 'Make your own dressing with mayo, garlic, and lemon.'
+                },
+                {
+                    name: 'Beef Tacos',
+                    description: 'Seasoned ground beef tacos with fresh toppings.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '22g', carbs: '35g', fiber: '4g', calories: 380, time: '20 min', servings: 3 },
+                    color: '#f59e0b',
+                    ingredients: ['1 lb ground beef', '8 taco shells', '1 packet taco seasoning', 'Shredded lettuce', 'Diced tomatoes', 'Shredded cheese', 'Sour cream', 'Salsa'],
+                    instructions: ['Brown ground beef in skillet.', 'Add taco seasoning and water per package directions.', 'Simmer until thickened.', 'Warm taco shells.', 'Fill shells with beef.', 'Top with lettuce, tomatoes, cheese, and sour cream.'],
+                    tips: 'Add black beans or corn for extra nutrition.'
+                },
+                {
+                    name: 'Mushroom Risotto',
+                    description: 'Creamy Italian rice dish with earthy mushrooms.',
+                    tags: ['vitamins'],
+                    macros: { protein: '10g', carbs: '48g', fiber: '3g', calories: 380, time: '35 min', servings: 3 },
+                    color: '#84cc16',
+                    ingredients: ['1 cup arborio rice', '8oz mushrooms', '4 cups chicken broth', '1/2 cup white wine', '1 onion', '2 cloves garlic', '1/2 cup parmesan', '2 tbsp butter', 'Fresh thyme'],
+                    instructions: ['Heat broth and keep warm.', 'Sauté mushrooms until golden, set aside.', 'Cook onion and garlic in butter.', 'Add rice, toast for 2 minutes.', 'Add wine, stir until absorbed.', 'Add broth one ladle at a time, stirring constantly.', 'Fold in mushrooms, parmesan, and butter.'],
+                    tips: 'Stir constantly for creamy texture.'
+                },
+                {
+                    name: 'Shrimp Scampi',
+                    description: 'Garlic butter shrimp with linguine pasta.',
+                    tags: ['protein'],
+                    macros: { protein: '30g', carbs: '55g', fiber: '3g', calories: 450, time: '25 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['1 lb shrimp', '8oz linguine', '4 tbsp butter', '4 cloves garlic', '1/2 cup white wine', 'Lemon juice', 'Red pepper flakes', 'Fresh parsley', 'Parmesan cheese'],
+                    instructions: ['Cook pasta according to package.', 'Melt butter in large pan.', 'Add garlic and red pepper flakes.', 'Add shrimp, cook until pink.', 'Pour in wine and lemon juice.', 'Toss with pasta and parsley.', 'Serve with parmesan.'],
+                    tips: 'Add spinach for extra greens.'
+                },
+                {
+                    name: 'Vegetable Soup',
+                    description: 'Hearty vegetable soup perfect for cold days.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '6g', carbs: '28g', fiber: '7g', calories: 150, time: '40 min', servings: 4 },
+                    color: '#10b981',
+                    ingredients: ['4 cups vegetable broth', '2 carrots', '2 celery stalks', '1 potato', '1 cup green beans', '1 can diced tomatoes', '1 onion', '2 cloves garlic', 'Italian herbs', 'Salt and pepper'],
+                    instructions: ['Dice all vegetables.', 'Sauté onion and garlic in pot.', 'Add carrots, celery, and potatoes.', 'Pour in broth and tomatoes.', 'Add herbs and simmer 30 minutes.', 'Add green beans in last 10 minutes.', 'Season to taste.'],
+                    tips: 'Add pasta or rice to make it more filling.'
+                },
+                {
+                    name: 'BBQ Pulled Pork',
+                    description: 'Slow cooked pulled pork with tangy BBQ sauce.',
+                    tags: ['protein'],
+                    macros: { protein: '35g', carbs: '25g', fiber: '1g', calories: 420, time: '4 hrs', servings: 6 },
+                    color: '#ef4444',
+                    ingredients: ['3 lb pork shoulder', '1 cup BBQ sauce', '1/2 cup apple cider vinegar', '1 onion', '2 tbsp brown sugar', '1 tbsp paprika', 'Salt and pepper', 'Burger buns'],
+                    instructions: ['Rub pork with spices and brown sugar.', 'Place in slow cooker with onion.', 'Add vinegar, cook on low 8 hours or high 4 hours.', 'Shred pork with forks.', 'Mix with BBQ sauce.', 'Serve on buns.'],
+                    tips: 'Serve with coleslaw for classic combo.'
+                },
+                {
+                    name: 'Caprese Salad',
+                    description: 'Fresh tomatoes, mozzarella, and basil with balsamic glaze.',
+                    tags: ['vitamins'],
+                    macros: { protein: '12g', carbs: '10g', fiber: '2g', calories: 220, time: '10 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['4 ripe tomatoes', '8oz fresh mozzarella', 'Fresh basil leaves', '3 tbsp olive oil', '2 tbsp balsamic glaze', 'Salt and pepper'],
+                    instructions: ['Slice tomatoes and mozzarella.', 'Arrange alternating on plate.', 'Tuck basil leaves between slices.', 'Drizzle with olive oil.', 'Add balsamic glaze.', 'Season with salt and pepper.'],
+                    tips: 'Use heirloom tomatoes for variety of colors.'
+                },
+                {
+                    name: 'Teriyaki Chicken',
+                    description: 'Sticky teriyaki chicken with steamed rice and vegetables.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '30g', carbs: '58g', fiber: '3g', calories: 460, time: '30 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['2 chicken thighs', '1/4 cup soy sauce', '2 tbsp honey', '1 tbsp rice vinegar', '1 tsp sesame oil', 'Ginger and garlic', 'Sesame seeds', 'Steamed rice', 'Broccoli'],
+                    instructions: ['Mix soy sauce, honey, vinegar, and sesame oil.', 'Marinate chicken for 15 minutes.', 'Cook chicken in pan until caramelized.', 'Add marinade and simmer until thick.', 'Serve over rice with broccoli.', 'Garnish with sesame seeds.'],
+                    tips: 'Use chicken thighs for juicier meat.'
+                },
+                {
+                    name: 'French Toast',
+                    description: 'Classic breakfast french toast with cinnamon and maple syrup.',
+                    tags: ['budget'],
+                    macros: { protein: '12g', carbs: '38g', fiber: '2g', calories: 320, time: '15 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['4 slices bread', '2 eggs', '1/2 cup milk', '1 tsp vanilla', '1 tsp cinnamon', '2 tbsp butter', 'Maple syrup', 'Fresh berries'],
+                    instructions: ['Whisk eggs, milk, vanilla, and cinnamon.', 'Dip bread slices in egg mixture.', 'Melt butter in skillet over medium heat.', 'Cook bread until golden on each side.', 'Serve with maple syrup and berries.'],
+                    tips: 'Use day-old bread for better absorption.'
+                },
+                {
+                    name: 'Clam Chowder',
+                    description: 'Creamy New England style clam chowder.',
+                    tags: ['protein'],
+                    macros: { protein: '18g', carbs: '32g', fiber: '2g', calories: 380, time: '40 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['2 cans clams', '4 strips bacon', '1 onion', '2 potatoes', '2 cups clam juice', '1 cup heavy cream', '2 tbsp flour', 'Bay leaf', 'Thyme'],
+                    instructions: ['Cook bacon until crispy, set aside.', 'Sauté onion in bacon fat.', 'Add flour, stir for 1 minute.', 'Add potatoes and clam juice.', 'Simmer until potatoes tender.', 'Add clams and cream.', 'Crumble bacon on top.'],
+                    tips: 'Serve with crusty bread for dipping.'
+                },
+                {
+                    name: 'Pad Thai',
+                    description: 'Thai stir fried rice noodles with shrimp and peanuts.',
+                    tags: ['protein'],
+                    macros: { protein: '25g', carbs: '65g', fiber: '3g', calories: 480, time: '25 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['8oz rice noodles', '1/2 lb shrimp', '2 eggs', 'Bean sprouts', 'Green onions', '3 tbsp fish sauce', '2 tbsp tamarind paste', '2 tbsp brown sugar', 'Crushed peanuts', 'Lime wedges'],
+                    instructions: ['Soak noodles in warm water.', 'Mix fish sauce, tamarind, and sugar.', 'Stir fry shrimp, set aside.', 'Scramble eggs in wok.', 'Add noodles and sauce.', 'Toss in shrimp, sprouts, and onions.', 'Top with peanuts and lime.'],
+                    tips: 'Add tofu for vegetarian version.'
+                },
+                {
+                    name: 'Minestrone Soup',
+                    description: 'Italian vegetable soup with pasta and beans.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '12g', carbs: '35g', fiber: '8g', calories: 220, time: '45 min', servings: 4 },
+                    color: '#10b981',
+                    ingredients: ['4 cups vegetable broth', '1 can kidney beans', '1 can cannellini beans', '1 zucchini', '2 carrots', '2 celery stalks', '1 can diced tomatoes', '1/2 cup pasta', 'Italian herbs', 'Parmesan rind'],
+                    instructions: ['Sauté onion, carrots, and celery.', 'Add tomatoes and broth.', 'Add zucchini and beans.', 'Simmer 20 minutes.', 'Add pasta and cook until tender.', 'Remove parmesan rind.', 'Serve with crusty bread.'],
+                    tips: 'Add spinach in last 5 minutes.'
+                },
+                {
+                    name: 'Egg Salad Sandwich',
+                    description: 'Creamy egg salad on soft bread.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '14g', carbs: '25g', fiber: '2g', calories: 320, time: '20 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['6 hard boiled eggs', '3 tbsp mayonnaise', '1 tsp mustard', 'Celery', 'Green onion', 'Salt and pepper', '4 slices bread', 'Lettuce'],
+                    instructions: ['Mash eggs in bowl.', 'Mix in mayonnaise and mustard.', 'Add diced celery and onion.', 'Season with salt and pepper.', 'Spread on bread.', 'Add lettuce and close sandwich.'],
+                    tips: 'Add relish or capers for extra flavor.'
+                },
+                {
+                    name: 'Beef Stroganoff',
+                    description: 'Russian dish with tender beef in creamy mushroom sauce.',
+                    tags: ['protein'],
+                    macros: { protein: '32g', carbs: '38g', fiber: '3g', calories: 480, time: '35 min', servings: 4 },
+                    color: '#8b5cf6',
+                    ingredients: ['1 lb beef sirloin', '8oz mushrooms', '1 onion', '2 cups beef broth', '1 cup sour cream', '2 tbsp flour', 'Egg noodles', 'Butter', 'Fresh parsley'],
+                    instructions: ['Slice beef into strips, season and brown.', 'Sauté mushrooms and onion.', 'Add flour, stir.', 'Pour in broth, simmer.', 'Return beef, cook until tender.', 'Stir in sour cream.', 'Serve over egg noodles.'],
+                    tips: 'Don\'t boil after adding sour cream.'
+                },
+                {
+                    name: 'Greek Gyro',
+                    description: 'Mediterranean wrap with seasoned meat and tzatziki.',
+                    tags: ['protein'],
+                    macros: { protein: '28g', carbs: '35g', fiber: '3g', calories: 450, time: '25 min', servings: 2 },
+                    color: '#8b5cf6',
+                    ingredients: ['1/2 lb lamb or chicken', 'Greek seasoning', '2 pita breads', '1 cucumber', '1 tomato', 'Red onion', '1/2 cup tzatziki sauce', 'Feta cheese', 'Olive oil'],
+                    instructions: ['Season meat with Greek spices.', 'Grill or pan fry until cooked.', 'Slice meat thinly.', 'Warm pita breads.', 'Spread tzatziki on pita.', 'Add meat and vegetables.', 'Top with feta and roll up.'],
+                    tips: 'Make homemade tzatziki with yogurt and cucumber.'
+                },
+                {
+                    name: 'Butternut Squash Soup',
+                    description: 'Creamy roasted butternut squash soup with warming spices.',
+                    tags: ['vitamins'],
+                    macros: { protein: '5g', carbs: '28g', fiber: '5g', calories: 180, time: '50 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['1 butternut squash', '1 onion', '3 cups vegetable broth', '1/2 cup cream', 'Nutmeg', 'Cinnamon', 'Butter', 'Croutons'],
+                    instructions: ['Roast squash until tender.', 'Scoop out flesh.', 'Sauté onion in butter.', 'Add squash and broth.', 'Simmer 20 minutes.', 'Blend until smooth.', 'Stir in cream and spices.', 'Top with croutons.'],
+                    tips: 'Add apple for natural sweetness.'
+                },
+                {
+                    name: 'Fish and Chips',
+                    description: 'Crispy battered fish with golden french fries.',
+                    tags: ['protein'],
+                    macros: { protein: '25g', carbs: '55g', fiber: '4g', calories: 520, time: '35 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['2 white fish fillets', '1 cup flour', '1 tsp baking powder', '1 cup beer or soda water', '2 cups frozen fries', 'Salt', 'Tartar sauce', 'Lemon wedges'],
+                    instructions: ['Make batter with flour, baking powder, and beer.', 'Heat oil to 350°F.', 'Dip fish in batter.', 'Fry fish until golden.', 'Bake fries according to package.', 'Serve with tartar sauce and lemon.'],
+                    tips: 'Use cod or halibut for best results.'
+                },
+                {
+                    name: 'Chicken Noodle Soup',
+                    description: 'Classic comfort soup with tender chicken and egg noodles.',
+                    tags: ['protein', 'vitamins'],
+                    macros: { protein: '25g', carbs: '30g', fiber: '3g', calories: 280, time: '45 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['2 chicken breasts', '6 cups chicken broth', '2 carrots', '2 celery stalks', '1 onion', 'Egg noodles', 'Fresh dill', 'Salt and pepper', 'Lemon juice'],
+                    instructions: ['Poach chicken in broth until cooked.', 'Remove and shred chicken.', 'Add vegetables to broth.', 'Simmer until tender.', 'Add noodles and cook.', 'Return chicken to pot.', 'Season and add dill.'],
+                    tips: 'Add noodles just before serving to prevent mushiness.'
+                },
+                {
+                    name: 'Falafel Wrap',
+                    description: 'Crispy falafel with hummus and vegetables in pita.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '18g', carbs: '48g', fiber: '8g', calories: 420, time: '30 min', servings: 2 },
+                    color: '#84cc16',
+                    ingredients: ['1 can chickpeas', '1/4 cup parsley', '1 onion', '2 cloves garlic', '1 tsp cumin', '2 tbsp flour', 'Pita bread', 'Hummus', 'Tomatoes', 'Cucumber', 'Tahini sauce'],
+                    instructions: ['Blend chickpeas with herbs and spices.', 'Form into small patties.', 'Pan fry until crispy.', 'Warm pita breads.', 'Spread hummus on pita.', 'Add falafel and vegetables.', 'Drizzle with tahini.'],
+                    tips: 'Bake at 375°F for healthier version.'
+                },
+                {
+                    name: 'Breakfast Burrito',
+                    description: 'Hearty morning burrito with eggs, cheese, and salsa.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '20g', carbs: '35g', fiber: '3g', calories: 420, time: '15 min', servings: 1 },
+                    color: '#f59e0b',
+                    ingredients: ['2 eggs', '1 large tortilla', '1/4 cup shredded cheese', '2 tbsp salsa', 'Black beans', 'Avocado', 'Hot sauce', 'Salt and pepper'],
+                    instructions: ['Scramble eggs in pan.', 'Warm tortilla.', 'Layer eggs, beans, and cheese on tortilla.', 'Add salsa and avocado.', 'Roll up tightly.', 'Optional: grill seam side down.'],
+                    tips: 'Add bacon or sausage for extra protein.'
+                },
+                {
+                    name: 'Mango Sticky Rice',
+                    description: 'Thai dessert with sweet coconut rice and fresh mango.',
+                    tags: ['budget'],
+                    macros: { protein: '6g', carbs: '65g', fiber: '3g', calories: 380, time: '40 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['1 cup sticky rice', '1 cup coconut milk', '3 tbsp sugar', '1/2 tsp salt', '2 ripe mangoes', 'Toasted sesame seeds'],
+                    instructions: ['Soak sticky rice 4 hours or overnight.', 'Steam rice until tender.', 'Heat coconut milk with sugar and salt.', 'Pour half over rice.', 'Serve rice with sliced mango.', 'Drizzle remaining coconut sauce.', 'Top with sesame seeds.'],
+                    tips: 'Mango should be ripe and sweet.'
+                },
+                {
+                    name: 'Honey Garlic Salmon',
+                    description: 'Glazed salmon fillet with honey garlic sauce.',
+                    tags: ['protein'],
+                    macros: { protein: '32g', carbs: '22g', fiber: '1g', calories: 420, time: '25 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['2 salmon fillets', '3 tbsp honey', '2 tbsp soy sauce', '4 cloves garlic', '1 tbsp olive oil', 'Lemon juice', 'Green onions', 'Asparagus or broccoli'],
+                    instructions: ['Mix honey, soy sauce, and minced garlic.', 'Season salmon with salt and pepper.', 'Sear salmon in hot pan.', 'Pour sauce over fish.', 'Baste and cook until glazed.', 'Serve with vegetables.', 'Garnish with green onions.'],
+                    tips: 'Don\'t overcook salmon for best texture.'
+                },
+                {
+                    name: 'Philly Cheesesteak',
+                    description: 'Classic Philadelphia sandwich with beef and melted cheese.',
+                    tags: ['protein'],
+                    macros: { protein: '30g', carbs: '42g', fiber: '3g', calories: 520, time: '20 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['1/2 lb ribeye beef', '2 hoagie rolls', 'Provolone cheese', '1 onion', '1 green pepper', 'Mushrooms', 'Butter', 'Salt and pepper'],
+                    instructions: ['Slice beef very thin.', 'Sauté onions and peppers.', 'Add beef, cook quickly.', 'Melt cheese over beef.', 'Toast hoagie rolls with butter.', 'Fill rolls with beef mixture.', 'Serve immediately.'],
+                    tips: 'Freeze beef slightly for easier slicing.'
+                },
+                {
+                    name: 'Shakshuka',
+                    description: 'Eggs poached in spiced tomato sauce, Middle Eastern style.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '14g', carbs: '18g', fiber: '4g', calories: 280, time: '25 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['4 eggs', '1 can diced tomatoes', '1 onion', '2 peppers', '3 cloves garlic', 'Cumin', 'Paprika', 'Cayenne', 'Feta cheese', 'Fresh cilantro', 'Crusty bread'],
+                    instructions: ['Sauté onion and peppers.', 'Add garlic and spices.', 'Pour in tomatoes, simmer.', 'Make wells and crack eggs.', 'Cover and cook until set.', 'Top with feta and cilantro.', 'Serve with bread.'],
+                    tips: 'Serve straight from the pan.'
+                },
+                {
+                    name: 'Chicken Tikka Masala',
+                    description: 'Creamy Indian curry with tender chicken pieces.',
+                    tags: ['protein'],
+                    macros: { protein: '28g', carbs: '25g', fiber: '4g', calories: 450, time: '40 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['1 lb chicken breast', '1 cup yogurt', '1 can tomato sauce', '1 cup heavy cream', 'Garam masala', 'Turmeric', 'Cumin', 'Ginger', 'Garlic', 'Basmati rice', 'Naan bread'],
+                    instructions: ['Marinate chicken in yogurt and spices.', 'Grill or broil chicken until charred.', 'Sauté onion, ginger, and garlic.', 'Add spices and tomato sauce.', 'Simmer.', 'Add cream and cooked chicken.', 'Serve over rice with naan.'],
+                    tips: 'Char the chicken for authentic flavor.'
+                },
+                {
+                    name: 'BLT Sandwich',
+                    description: 'Classic bacon, lettuce, and tomato sandwich.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '15g', carbs: '28g', fiber: '3g', calories: 380, time: '15 min', servings: 1 },
+                    color: '#ef4444',
+                    ingredients: ['4 strips bacon', '2 slices bread', 'Lettuce', '1 tomato', 'Mayonnaise', 'Salt and pepper'],
+                    instructions: ['Cook bacon until crispy.', 'Toast bread.', 'Spread mayo on bread.', 'Layer lettuce and tomato.', 'Add bacon.', 'Season and close sandwich.'],
+                    tips: 'Add avocado or fried egg for variation.'
+                },
+                {
+                    name: 'Lasagna',
+                    description: 'Layers of pasta, meat sauce, and cheese.',
+                    tags: ['protein'],
+                    macros: { protein: '28g', carbs: '45g', fiber: '4g', calories: 520, time: '90 min', servings: 6 },
+                    color: '#ef4444',
+                    ingredients: ['12 lasagna noodles', '1 lb ground beef', '2 cups ricotta', '2 cups mozzarella', '1/2 cup parmesan', '2 cups marinara sauce', '1 egg', 'Italian herbs', 'Garlic', 'Onion'],
+                    instructions: ['Brown beef with onion and garlic.', 'Mix with marinara.', 'Mix ricotta with egg and herbs.', 'Layer noodles, ricotta, meat sauce, cheese.', 'Repeat layers.', 'Top with mozzarella.', 'Bake at 375°F for 45 minutes.'],
+                    tips: 'Let rest 10 minutes before cutting.'
+                },
+                {
+                    name: 'Chicken Wings Buffalo Style',
+                    description: 'Crispy fried wings with spicy buffalo sauce.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '25g', carbs: '8g', fiber: '1g', calories: 380, time: '45 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['2 lbs chicken wings', '1/2 cup hot sauce', '4 tbsp butter', '1 tbsp vinegar', 'Salt', 'Blue cheese dressing', 'Celery sticks'],
+                    instructions: ['Pat wings dry.', 'Fry at 375°F until crispy.', 'Mix hot sauce, butter, and vinegar.', 'Toss wings in sauce.', 'Serve with blue cheese and celery.'],
+                    tips: 'Bake at 400°F for crispy wings without frying.'
+                },
+                {
+                    name: 'Avocado Toast',
+                    description: 'Smashed avocado on toasted bread with toppings.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '8g', carbs: '25g', fiber: '7g', calories: 280, time: '10 min', servings: 1 },
+                    color: '#10b981',
+                    ingredients: ['1 ripe avocado', '2 slices sourdough bread', 'Lime juice', 'Red pepper flakes', 'Salt', 'Cherry tomatoes', 'Microgreens', 'Optional: poached egg'],
+                    instructions: ['Toast bread until golden.', 'Mash avocado with lime and salt.', 'Spread on toast.', 'Top with tomatoes and greens.', 'Sprinkle with red pepper flakes.'],
+                    tips: 'Add poached egg for protein.'
+                },
+                {
+                    name: 'Chicken Quesadilla',
+                    description: 'Crispy tortilla filled with chicken and melted cheese.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '28g', carbs: '32g', fiber: '3g', calories: 420, time: '15 min', servings: 1 },
+                    color: '#f59e0b',
+                    ingredients: ['1 large tortilla', '1/2 cup shredded chicken', '1/2 cup shredded cheese', 'Sautéed peppers and onions', 'Salsa', 'Sour cream', 'Butter'],
+                    instructions: ['Layer chicken and cheese on half tortilla.', 'Add sautéed vegetables.', 'Fold tortilla in half.', 'Cook in buttered pan.', 'Flip when golden.', 'Cut into wedges.', 'Serve with salsa and sour cream.'],
+                    tips: 'Add black beans for fiber.'
+                },
+                {
+                    name: 'Shrimp Tacos',
+                    description: 'Spiced grilled shrimp tacos with slaw and crema.',
+                    tags: ['protein'],
+                    macros: { protein: '22g', carbs: '35g', fiber: '4g', calories: 380, time: '20 min', servings: 2 },
+                    color: '#8b5cf6',
+                    ingredients: ['1/2 lb shrimp', 'Small corn tortillas', 'Cabbage slaw', 'Chipotle mayo', 'Lime', 'Cilantro', 'Cumin', 'Garlic', 'Avocado'],
+                    instructions: ['Season shrimp with cumin and garlic.', 'Grill or sauté until pink.', 'Warm tortillas.', 'Assemble with slaw.', 'Top with shrimp.', 'Add crema and cilantro.', 'Squeeze lime over.'],
+                    tips: 'Make quick slaw with cabbage and lime juice.'
+                },
+                {
+                    name: 'Chicken Pot Pie',
+                    description: 'Creamy chicken pie with flaky pastry top.',
+                    tags: ['protein'],
+                    macros: { protein: '22g', carbs: '42g', fiber: '4g', calories: 480, time: '60 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['2 chicken breasts', '1 cup peas', '1 cup carrots', '1 cup potatoes', '1/2 cup onion', '1/3 cup butter', '1/3 cup flour', '1/2 cup milk', '2 cups chicken broth', 'Pie crust'],
+                    instructions: ['Cook and dice chicken.', 'Cook vegetables until tender.', 'Make white sauce with butter, flour, and milk.', 'Combine chicken, veggies, and sauce.', 'Pour into baking dish.', 'Top with pie crust.', 'Bake at 425°F until golden.'],
+                    tips: 'Use leftover rotisserie chicken.'
+                },
+                {
+                    name: 'Acai Bowl',
+                    description: 'Frozen acai smoothie bowl with toppings.',
+                    tags: ['vitamins'],
+                    macros: { protein: '6g', carbs: '55g', fiber: '8g', calories: 340, time: '10 min', servings: 1 },
+                    color: '#8b5cf6',
+                    ingredients: ['2 acai packets', '1 frozen banana', '1/2 cup frozen berries', '1/4 cup granola', '1 tbsp honey', 'Sliced banana', 'Chia seeds', 'Coconut flakes'],
+                    instructions: ['Blend acai, banana, and berries.', 'Pour into bowl.', 'Top with granola and sliced banana.', 'Add chia seeds and coconut.', 'Drizzle with honey.'],
+                    tips: 'Use frozen fruit for thick consistency.'
+                },
+                {
+                    name: 'Corn Chowder',
+                    description: 'Creamy corn soup with bacon and potatoes.',
+                    tags: ['budget'],
+                    macros: { protein: '10g', carbs: '35g', fiber: '4g', calories: 280, time: '35 min', servings: 4 },
+                    color: '#f59e0b',
+                    ingredients: ['4 ears corn', '2 potatoes', '3 strips bacon', '1 onion', '2 cups milk', '1 cup chicken broth', 'Butter', 'Thyme', 'Salt and pepper'],
+                    instructions: ['Cut corn off cobs.', 'Cook bacon, set aside.', 'Sauté onion in bacon fat.', 'Add potatoes and broth.', 'Simmer until tender.', 'Add corn and milk.', 'Mash slightly for thickness.', 'Top with bacon and thyme.'],
+                    tips: 'Use frozen corn if fresh isn\'t available.'
+                },
+                {
+                    name: 'Butter Chicken',
+                    description: 'Rich and creamy Indian chicken in tomato butter sauce.',
+                    tags: ['protein'],
+                    macros: { protein: '30g', carbs: '18g', fiber: '3g', calories: 450, time: '40 min', servings: 4 },
+                    color: '#ef4444',
+                    ingredients: ['1 lb chicken breast', '1 cup tomato puree', '1 cup heavy cream', '4 tbsp butter', 'Garam masala', 'Kashmiri chili', 'Ginger', 'Garlic', 'Basmati rice', 'Naan'],
+                    instructions: ['Marinate chicken in yogurt and spices.', 'Grill until charred.', 'Make sauce with butter, tomatoes, and spices.', 'Add cream.', 'Cut chicken and add to sauce.', 'Simmer until saucy.', 'Serve with rice and naan.'],
+                    tips: 'Adjust spice level to taste.'
+                },
+                {
+                    name: 'Tuna Salad',
+                    description: 'Light tuna salad with crunchy vegetables.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '25g', carbs: '15g', fiber: '3g', calories: 250, time: '10 min', servings: 2 },
+                    color: '#10b981',
+                    ingredients: ['2 cans tuna', '2 tbsp mayonnaise', '1 stalk celery', '1/4 cup red onion', 'Lemon juice', 'Salt and pepper', 'Mixed greens', 'Avocado'],
+                    instructions: ['Drain tuna.', 'Mix with mayo and lemon.', 'Add diced celery and onion.', 'Season to taste.', 'Serve on greens with avocado.'],
+                    tips: 'Use Greek yogurt for lighter version.'
+                },
+                {
+                    name: 'Lobster Roll',
+                    description: 'New England style lobster salad in buttered roll.',
+                    tags: ['protein'],
+                    macros: { protein: '28g', carbs: '28g', fiber: '2g', calories: 420, time: '20 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['1 lb cooked lobster meat', '3 tbsp mayonnaise', 'Lemon juice', 'Celery', 'Butter', '2 New England rolls', 'Lettuce', 'Paprika', 'Fresh dill'],
+                    instructions: ['Chop lobster into chunks.', 'Mix with mayo, lemon, and celery.', 'Season with paprika and dill.', 'Toast rolls with butter.', 'Fill with lobster salad.', 'Serve immediately.'],
+                    tips: 'Serve cold or slightly warm.'
+                },
+                {
+                    name: 'Green Smoothie',
+                    description: 'Healthy spinach and fruit smoothie.',
+                    tags: ['vitamins', 'budget'],
+                    macros: { protein: '5g', carbs: '45g', fiber: '6g', calories: 180, time: '5 min', servings: 1 },
+                    color: '#10b981',
+                    ingredients: ['2 cups spinach', '1 banana', '1/2 cup frozen mango', '1 cup almond milk', '1 tbsp almond butter', '1 tbsp honey', 'Ice cubes'],
+                    instructions: ['Add all ingredients to blender.', 'Blend until smooth.', 'Add more milk if needed.', 'Pour and serve immediately.'],
+                    tips: 'Freeze spinach for smoother texture.'
+                },
+                {
+                    name: 'Margherita Pizza',
+                    description: 'Classic Italian pizza with tomato, mozzarella, and basil.',
+                    tags: ['protein'],
+                    macros: { protein: '18g', carbs: '55g', fiber: '3g', calories: 450, time: '30 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['1 pizza dough', '1/2 cup tomato sauce', '8oz fresh mozzarella', 'Fresh basil leaves', 'Olive oil', 'Salt', 'Garlic'],
+                    instructions: ['Preheat oven to 500°F.', 'Stretch dough into circle.', 'Spread sauce leaving border.', 'Tear mozzarella over top.', 'Drizzle with olive oil.', 'Bake until crust is golden.', 'Top with fresh basil.'],
+                    tips: 'Use pizza stone for crispier crust.'
+                },
+                {
+                    name: 'Chicken Fried Rice',
+                    description: 'Stir fried rice with chicken, egg, and vegetables.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '24g', carbs: '58g', fiber: '4g', calories: 420, time: '20 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['3 cups day-old rice', '1 chicken breast', '2 eggs', 'Frozen peas and carrots', 'Green onions', 'Soy sauce', 'Sesame oil', 'Ginger', 'Garlic'],
+                    instructions: ['Cut and cook chicken.', 'Scramble eggs and set aside.', 'Stir fry vegetables.', 'Add rice and stir fry.', 'Add chicken and eggs.', 'Season with soy sauce and sesame oil.', 'Top with green onions.'],
+                    tips: 'Day-old rice works best.'
+                },
+                {
+                    name: 'Black Bean Soup',
+                    description: 'Hearty Cuban style black bean soup.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '14g', carbs: '42g', fiber: '12g', calories: 280, time: '40 min', servings: 4 },
+                    color: '#8b5cf6',
+                    ingredients: ['2 cans black beans', '1 onion', '2 peppers', '3 cloves garlic', 'Cumin', 'Oregano', 'Vegetable broth', 'Lime', 'Cilantro', 'Sour cream'],
+                    instructions: ['Sauté onion and peppers.', 'Add garlic and spices.', 'Add beans and broth.', 'Simmer 20 minutes.', 'Blend half for thickness.', 'Season and serve.', 'Top with sour cream and cilantro.'],
+                    tips: 'Add ham hock for smokier flavor.'
+                },
+                {
+                    name: 'Egg Benedict',
+                    description: 'Poached eggs on English muffin with hollandaise.',
+                    tags: ['protein'],
+                    macros: { protein: '18g', carbs: '22g', fiber: '2g', calories: 420, time: '25 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['4 eggs', '2 English muffins', '4 slices Canadian bacon', '3 egg yolks', '1/2 cup butter', 'Lemon juice', 'Salt', 'Cayenne', 'Fresh chives'],
+                    instructions: ['Make hollandaise: whisk yolks over double boiler.', 'Slowly add melted butter.', 'Season with lemon, salt, and cayenne.', 'Poach eggs in simmering water.', 'Toast English muffins.', 'Layer bacon and egg.', 'Top with hollandaise.', 'Garnish with chives.'],
+                    tips: 'Add vinegar to poaching water for better shape.'
+                },
+                {
+                    name: 'Chicken Parmesan',
+                    description: 'Breaded chicken with marinara and melted cheese.',
+                    tags: ['protein'],
+                    macros: { protein: '35g', carbs: '38g', fiber: '3g', calories: 480, time: '35 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['2 chicken breasts', '1 cup breadcrumbs', '1/2 cup parmesan', '1 egg', '1 cup marinara sauce', '1 cup mozzarella', 'Spaghetti', 'Fresh basil', 'Garlic'],
+                    instructions: ['Pound chicken thin.', 'Bread with egg, breadcrumbs, and parmesan.', 'Pan fry until golden.', 'Top with marinara and mozzarella.', 'Bake at 400°F until cheese melts.', 'Serve over spaghetti.'],
+                    tips: 'Freeze extra breaded chicken for quick meals.'
+                },
+                {
+                    name: 'Ramen Noodle Soup',
+                    description: 'Japanese noodle soup with egg and vegetables.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '18g', carbs: '55g', fiber: '3g', calories: 380, time: '20 min', servings: 1 },
+                    color: '#f59e0b',
+                    ingredients: ['1 pack ramen noodles', 'Soft boiled egg', 'Green onions', 'Norí', 'Corn', 'Bok choy', 'Soy sauce', 'Sesame oil', 'Optional: sliced pork'],
+                    instructions: ['Cook noodles in broth.', 'Add soy sauce and sesame oil.', 'Soft boil egg and halve.', 'Place egg and vegetables in bowl.', 'Add noodles and hot broth.', 'Top with norí and green onions.'],
+                    tips: 'Use homemade broth for better flavor.'
+                },
+                {
+                    name: 'Pesto Pasta',
+                    description: 'Pasta with fresh basil pesto and cherry tomatoes.',
+                    tags: ['vitamins'],
+                    macros: { protein: '12g', carbs: '62g', fiber: '4g', calories: 450, time: '20 min', servings: 2 },
+                    color: '#10b981',
+                    ingredients: ['8oz pasta', '2 cups fresh basil', '1/3 cup pine nuts', '1/2 cup parmesan', '2 cloves garlic', '1/2 cup olive oil', 'Cherry tomatoes', 'Salt and pepper'],
+                    instructions: ['Cook pasta according to package.', 'Blend basil, pine nuts, garlic, and parmesan.', 'Slowly add olive oil while blending.', 'Toss pasta with pesto.', 'Halve tomatoes and add.', 'Top with extra parmesan.'],
+                    tips: 'Add grilled chicken for protein.'
+                },
+                {
+                    name: 'Chocolate Chip Cookies',
+                    description: 'Classic homemade chocolate chip cookies.',
+                    tags: ['budget'],
+                    macros: { protein: '4g', carbs: '35g', fiber: '1g', calories: 280, time: '30 min', servings: 12 },
+                    color: '#f59e0b',
+                    ingredients: ['2 1/4 cups flour', '1 cup butter', '3/4 cup sugar', '3/4 cup brown sugar', '2 eggs', '1 tsp vanilla', '1 tsp baking soda', '2 cups chocolate chips', 'Salt'],
+                    instructions: ['Cream butter and sugars.', 'Beat in eggs and vanilla.', 'Mix in flour, baking soda, and salt.', 'Fold in chocolate chips.', 'Scoop onto baking sheet.', 'Bake at 375°F for 10-12 minutes.', 'Cool on wire rack.'],
+                    tips: 'Chill dough for thicker cookies.'
+                },
+                {
+                    name: 'Steak Frites',
+                    description: 'French steak with crispy french fries and béarnaise.',
+                    tags: ['protein'],
+                    macros: { protein: '35g', carbs: '42g', fiber: '3g', calories: 580, time: '35 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['2 ribeye steaks', 'Russet potatoes', 'Butter', 'Tarragon', 'Shallots', 'White wine', 'Egg yolks', 'Vegetable oil', 'Salt and pepper'],
+                    instructions: ['Cut and fry potatoes until crispy.', 'Season steaks generously.', 'Sear in cast iron pan.', 'Rest meat.', 'Make béarnaise with tarragon and shallots.', 'Slice steaks.', 'Serve with fries and sauce.'],
+                    tips: 'Rest steak before cutting.'
+                },
+                {
+                    name: 'Tom Yum Soup',
+                    description: 'Spicy Thai soup with shrimp and mushrooms.',
+                    tags: ['protein'],
+                    macros: { protein: '20g', carbs: '15g', fiber: '2g', calories: 180, time: '25 min', servings: 2 },
+                    color: '#ef4444',
+                    ingredients: ['1/2 lb shrimp', 'Mushrooms', 'Lemongrass', 'Galangal', 'Kaffir lime leaves', 'Fish sauce', 'Lime juice', 'Thai chilies', 'Cilantro', 'Coconut milk'],
+                    instructions: ['Simmer lemongrass, galangal, and lime leaves.', 'Add mushrooms.', 'Add shrimp and cook.', 'Season with fish sauce and lime.', 'Add chilies.', 'Stir in coconut milk.', 'Top with cilantro.'],
+                    tips: 'Adjust spice level with chilies.'
+                },
+                {
+                    name: 'Peanut Butter Noodles',
+                    description: 'Asian style noodles with creamy peanut sauce.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '18g', carbs: '65g', fiber: '4g', calories: 480, time: '20 min', servings: 2 },
+                    color: '#f59e0b',
+                    ingredients: ['8oz rice noodles', '1/2 cup peanut butter', '2 tbsp soy sauce', '1 tbsp rice vinegar', '1 tbsp honey', 'Ginger', 'Garlic', 'Green onions', 'Crushed peanuts', 'Lime'],
+                    instructions: ['Cook noodles according to package.', 'Mix peanut butter with soy, vinegar, and honey.', 'Add ginger and garlic to noodles.', 'Toss with peanut sauce.', 'Top with green onions and peanuts.', 'Squeeze lime over.'],
+                    tips: 'Add chicken or tofu for protein.'
+                },
+                {
+                    name: 'Deviled Eggs',
+                    description: 'Classic creamy deviled eggs for any occasion.',
+                    tags: ['protein', 'budget'],
+                    macros: { protein: '10g', carbs: '2g', fiber: '0g', calories: 150, time: '25 min', servings: 6 },
+                    color: '#f59e0b',
+                    ingredients: ['6 eggs', '1/4 cup mayonnaise', '1 tsp mustard', 'Paprika', 'Salt', 'White pepper', 'Optional: pickle relish'],
+                    instructions: ['Hard boil eggs.', 'Peel and halve.', 'Remove yolks.', 'Mash yolks with mayo and mustard.', 'Season and pipe back into whites.', 'Sprinkle with paprika.'],
+                    tips: 'Use piping bag for pretty presentation.'
                 }
             ];
 
