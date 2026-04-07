@@ -1,10 +1,4 @@
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Hackathon-Fuel%20the%20Future%202026-brightgreen" alt="Hackathon">
-  <img src="https://img.shields.io/badge/Topic-Malnutrition%20Solutions-blue" alt="Topic">
-  <img src="https://img.shields.io/badge/Stack-React%20%2B%20Three.js-orange" alt="Stack">
-</p>
-
 ## Overview
 
 **NutriAI** is an AI-powered malnutrition assessment and nutrition companion platform designed to address food insecurity in underserved communities. Built for the Fuel the Future Hackathon Spring 2026.
