@@ -1,4 +1,3 @@
-# NutriAI - Fuel the Future Hackathon 2026
 
 <p align="center">
   <img src="https://img.shields.io/badge/Hackathon-Fuel%20the%20Future%202026-brightgreen" alt="Hackathon">
